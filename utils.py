@@ -1,5 +1,10 @@
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEIGHT = 800
+
+# You should make getters and setters instead
+ROWS = 10 
+COLS = 10 
+SQSIZE = SCREEN_WIDTH // COLS
 
 
 def height_prct(percentage):
