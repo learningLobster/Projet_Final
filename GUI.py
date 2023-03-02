@@ -1,7 +1,7 @@
 import pygame as py
 import sys
 import utils
-import button
+import menu_button as button
 import theme
 from cases import Case
 from pawn import Pawn
@@ -35,13 +35,11 @@ class Game():
         self.red_pice = self.red_pawn.piece.convert_alpha()
         self.white_pice = self.white_pawn.piece.convert_alpha()
 
-        # Define font
-        self.font = py.font.SysFont('arialbalck', 40)
+        # # Define font
+        # self.font = py.font.SysFont('flux', 40) # Look for a suitable font
 
-        # Define colors
-        self.TEXT_COLOR = (255, 255, 255)
 
-        # Load button images # Should resize the pictures later
+        # Load button images 
         help_img = py.image.load("assets\\help_button.png").convert_alpha()
         quit_img = py.image.load("assets\\quit_button.png").convert_alpha()
         start_img = py.image.load("assets\\start_button.png").convert_alpha()
@@ -52,28 +50,24 @@ class Game():
             utils.width_prct(40),
             utils.height_prct(25),
             start_img,
-            1
         )
 
         self.help_button = button.Button(
             utils.width_prct(40),
             utils.height_prct(45),
             help_img, 
-            1
             )
         
         self.quit_button = button.Button(
             utils.width_prct(40),
             utils.height_prct(65),
             quit_img, 
-            1
             )
         
         self.back_button = button.Button(
             utils.width_prct(75),
             utils.height_prct(85),
             back_img, 
-            1
             )
         
 
@@ -112,10 +106,7 @@ class Game():
 
 
 
-    # This is unused for now
-    def draw_text(self, text, font, text_col, x, y):
-        img = font.render(text, True, text_col)
-        self.screen.blit(img, (x, y))
+
 
     # Event handler
     def check_events(self):
@@ -124,17 +115,17 @@ class Game():
             if event.type == py.QUIT:
                 py.quit()
                 sys.exit()
+
             if event.type == py.KEYDOWN:
                 if event.key == py.K_SPACE:
                     print('test')
 
     # Game loop
     def mainloop(self):
-        running = True
 
-        while running:
+        while True:
 
-            self.screen.fill((52, 78, 91))
+            self.screen.fill((250, 52, 25))
             self.check_events()
     
             if self.game_state == "menu":
@@ -143,29 +134,22 @@ class Game():
                 # Simply means that the button has been clicked, returns a boolean
                 
                 # Buttons are clicked two by two, why? Try to change the coords in the blit method. It worked, buttons were too close to each other. I think it is due to the actual size of the pictures themselves
-                if self.start_button.draw(self.screen):
+                if self.start_button.display(self.screen):
                     # self.game_state = 'settings'
                     self.game_state = 'game'
-                if self.help_button.draw(self.screen): self.game_state = 'help' # Simply means that the button has been clicked, returns a boolean
+                if self.help_button.display(self.screen): self.game_state = 'help' # Simply means that the button has been clicked, returns a boolean
 
 
 
 
-                if self.quit_button.draw(self.screen):  # Simply means that the button has been clicked, returns a boolean
+                if self.quit_button.display(self.screen):  # Simply means that the button has been clicked, returns a boolean
                     py.quit()
                     sys.exit()
 
 
             elif self.game_state == 'help':
-                self.draw_text(
-                        """Each player in turn, chooses to move his pawn or to put up one of his fences. \nWhen he has run out of fences, the player must move his pawn.\n
-                        At the beginning the board is empty.\n Choose and place your pawn in the center of the first line of your side of the board, your opponent takes another pawn and places it in the center of the first line of his side of the board(the one facing yours). Then take 10 fences each""",
-                        self.font, 
-                        self.TEXT_COLOR, 
-                        utils.width_prct(5), 
-                        utils.height_prct(5)
-                        )
-                if self.back_button.draw(self.screen): self.game_state = 'menu'
+                # Display the rules
+                if self.back_button.display(self.screen): self.game_state = 'menu'
                 
             elif self.game_state == 'game':
                 self.show_board(self.screen)
