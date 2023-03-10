@@ -2,8 +2,8 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 
 # You should make getters and setters instead
-ROWS = 10 
-COLS = 10 
+ROWS = 9
+COLS = 9
 SQSIZE = SCREEN_WIDTH // COLS
 
 
