@@ -1,100 +1,48 @@
-def Game_Board(board,n):
-  
-  '''
-    Cette fonction a pour but de retourner un plateau de jeu à deux dimensions remplis de points
-  '''
-    # Création d'une liste à deux dimensions de n lignes et n colonnes, remplie de '.'
+import pygame_widgets
+import pygame
+from pygame_widgets.button import Button
+from pygame_widgets.dropdown import Dropdown
 
-  board = [[' . '] * n for i in range(n)]
-  # Affichage du plateau
-  for i in range(n):
-        print('\n'+ ' ', end='')
-        for j in range(n):
-          print(board[i][j], end='')
+pygame.init()
+win = pygame.display.set_mode((400, 280))
 
-  return board
-
-
-
-
-def place_pawn(a,b,board):
-
-  '''
-  Cette fonction a pour but de placer les pions sur le plateau de jeu en prenant en compte les coordonnées des pions des joueurs
-  '''
-  # Déclaration des variables où sont stockées les pions
-
-  player1_pawn = 'x'
-  player2_pawn = 'o'
-
-  # Demande aux joueurs de saisir les coordonnées d'une case où il veut poser un pion
-  
-  i, j = map(int, input(f"{a}, entrez les coordonnées d'une case où vous voulez poser un pion (ligne, colonne) :").split(','))
-  i, j = int(i) , int(j)
-
-  # Place le pion du joueur 'a' sur le plateau de jeu
-
-  board[i][j] = player1_pawn
-
-  # Affiche le nouveau plateau de jeu avec le pion du joueur 'a' placé dessus
-
-  for i in range(len(board)):
-        print('\n' + ' ', end='')
-        for j in range(len(board)):
-            print(board[i][j], end='')
-
-  i, j = map(int, input(f"{b}, entrez les coordonnées d'une case où vous voulez poser un pion (ligne, colonne) :").split(','))
-  i, j = int(i) , int(j) 
-
-  # Place le pion du joueur 'b' sur le plateau de jeu
-
-  board[i][j] = player2_pawn
-
-  # Affiche le nouveau plateau de jeu avec le pion du joueur 'b' placé dessus
-
-  for i in range(len(board)):
-        print('\n' + ' ', end='')
-        for j in range(len(board)):
-            print(board[i][j], end='')
+run = True
+while run:
+    events = pygame.event.get()
+    for event in events:
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            run = False
+            quit()
 
 
 
+    dropdown = Dropdown(
+        win, 120, 10, 100, 50, name='Select Color',
+        choices=[
+            'Red',
+            'Blue',
+            'Yellow',
+        ],
+        borderRadius=3, colour=pygame.Color('green'), values=[1, 2, 'true'], direction='down', textHAlign='left'
+    )
 
-def place_barriers(a,b,board):
-  
-  '''
-  Cette fonction a pour but de placer les pions sur le plateau de jeu en prenant en compte les coordonnées des pions des joueurs
-  '''
-  # Déclaration de la variable où seront stockés les barrières
 
-  barriers = '|'
+    def print_value():
+        print(dropdown.getSelected())
 
-  # Demande aux joueurs de saisir les coordonnées d'une case où il veut poser une barrière
-  
-  i, j = map(int, input(f"{a}, entrez les coordonnées d'une case où vous voulez poser une barrière (ligne, colonne) :").split(','))
-  i, j = int(i) , int(j)
 
-  # Place la barrière  du joueur 'a' sur le plateau de jeu
+    button = Button(
+        win, 10, 10, 100, 50, text='Print Value', fontSize=30,
+        margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
+        radius=5, onClick=print_value, font=pygame.font.SysFont('calibri', 10),
+        textVAlign='bottom'
+    )
 
-  board[i][j] = barriers
 
-  # Affiche le nouveau plateau de jeu avec la barrière du joueur 'a' placé dessus
+    win.fill((255, 255, 255))
 
-  for i in range(len(board)):
-        print('\n' + ' ', end='')
-        for j in range(len(board)):
-            print(board[i][j], end='')
-  
-  i, j = map(int, input(f"{b}, entrez les coordonnées d'une case où vous voulez poser une barrière (ligne, colonne) :").split(','))
-  i, j = int(i) , int(j) 
+    pygame_widgets.update(events)
+    pygame.display.update()
 
-  # Place la barrière du joueur 'b' sur le plateau de jeu
 
-  board[i][j] = barriers
-
-  # Affiche le nouveau plateau de jeu avec la barrière  du joueur 'b' placé dessus
-
-  for i in range(len(board)):
-        print('\n' + ' ', end='')
-        for j in range(len(board)):
-            print(board[i][j], end='')

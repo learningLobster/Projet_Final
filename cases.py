@@ -1,3 +1,5 @@
+# Each square of the board is an instance of this class, thus the move methods will be coded here.
+
 import utils
 import pygame
 

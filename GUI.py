@@ -1,20 +1,76 @@
+# Pygame and other modules
 import pygame as py
 import sys
+import pygame_widgets
+from pygame_widgets.dropdown import Dropdown
+
+
+# Project files
 import utils
 import menu_button as button
 import theme
 from cases import Case
 from pawn import Pawn
 
+
+
 class Game():
     def __init__(self):
         # Create game Window
-        py.init()
-
-        self.screen = py.display.set_mode(
-            (utils.SCREEN_WIDTH, utils.SCREEN_HEIGHT))
-        py.display.set_caption('Quorridor')
+        py.init() # It is imperative to put this in the code, because it initializes all pygame modules
+        self.screen = py.display.set_mode((utils.SCREEN_WIDTH, utils.SCREEN_HEIGHT)) # Set the screen dimensions
+        py.display.set_caption('Quorridor') # sets the screen title
         self.clock = py.time.Clock()
+
+
+
+        self.board_size = Dropdown(
+            self.screen,
+            utils.width_prct(35),
+            utils.height_prct(25),
+            width=250,
+            height=25,
+            name='Selects the board size',
+            choices=['5x5', '7x7', '9x9', '11x11'],
+            borderRadius=3,
+            colour=py.Color('beige'),
+            values=[5, 7, 9, 11],
+            direction='down',
+            # eventType=py.MOUSEBUTTONDOWN
+        )
+        utils.ROWS = self.board_size.getSelected()
+
+        self.number_of_players = Dropdown(
+            self.screen,
+            utils.width_prct(35),
+            utils.height_prct(45),
+            width=250,
+            height=25,
+            name='Selects the number of players',
+            choices=['2', '3', '4'],
+            borderRadius=3,
+            colour=py.Color('beige'),
+            values=[2, 3, 4],
+            direction='down',
+        )
+
+        self.number_of_walls = Dropdown(
+            self.screen,
+            utils.width_prct(35),
+            utils.height_prct(65),
+            width=250,
+            height=25,
+            name='Selects the number of players',
+            choices=['4', '20', '40'],
+            borderRadius=3,
+            colour=py.Color('beige'),
+            values=[4, 20, 40],
+            direction='down',
+        )
+
+        # pygame_widgets.update(py.event.poll())
+        # py.event.clear()
+
 
         # This is my console board
         self.cases = [[0] * utils.COLS for i in range(utils.COLS)]
@@ -31,12 +87,10 @@ class Game():
         # Pawns
         self.red_pawn = Pawn('red')
         self.white_pawn = Pawn('white')
+
         # Load the pawn images
         self.red_pice = self.red_pawn.piece.convert_alpha()
         self.white_pice = self.white_pawn.piece.convert_alpha()
-
-        # # Define font
-        # self.font = py.font.SysFont('flux', 40) # Look for a suitable font
 
 
         # Load button images 
@@ -44,18 +98,19 @@ class Game():
         quit_img = py.image.load("assets\\quit_button.png").convert_alpha()
         start_img = py.image.load("assets\\start_button.png").convert_alpha()
         back_img = py.image.load("assets\\back_button.png").convert_alpha()
+        resume_img = py.image.load("assets\\resume_button.png").convert_alpha()
 
         # create button instances
         self.start_button = button.Button(
-            utils.width_prct(40),
-            utils.height_prct(25),
-            start_img,
+            utils.width_prct(40), # x position
+            utils.height_prct(25), # y position
+            start_img, # The image
         )
 
         self.help_button = button.Button(
             utils.width_prct(40),
             utils.height_prct(45),
-            help_img, 
+            help_img, # The image
             )
         
         self.quit_button = button.Button(
@@ -65,15 +120,21 @@ class Game():
             )
         
         self.back_button = button.Button(
-            utils.width_prct(75),
-            utils.height_prct(85),
+            utils.width_prct(60), # x coordinate
+            utils.height_prct(85), # y coordinate
             back_img, 
+            )
+        
+        self.resume_button = button.Button(
+            utils.width_prct(25),
+            utils.height_prct(85),
+            resume_img, 
             )
         
 
     # Show_methods
     def show_board(self, screen):
-        self.screen.fill((119, 154, 88))
+        self.screen.fill((119, 154, 88)) # Board color
         for row in range(utils.ROWS):
             for col in range(utils.COLS):
                 rect = (col * utils.SQSIZE, row * utils.SQSIZE, utils.SQSIZE, utils.SQSIZE) # rectangle dimensions
@@ -105,41 +166,50 @@ class Game():
                         )
 
 
-
-
-
     # Event handler
     def check_events(self):
-        for event in py.event.get():
-            # Allows to quit the application correctly
-            if event.type == py.QUIT:
-                py.quit()
-                sys.exit()
+        pass
+        # for event in py.event.get():
+        #     # Allows to quit the application correctly
+        #     if event.type == py.QUIT:
+        #         py.quit()
+        #         sys.exit()
+        #     elif event.type  == py.MOUSEBUTTONDOWN or event.type == py.MOUSEBUTTONUP: 
+        #         pass
+        #     # This is a test
+        #     elif event.type == py.KEYDOWN or event.type == py.KEYUP:
+        #         if event.key == py.K_SPACE:
+        #             print('test')
+            # else:
+            #     self.mainloop(event)
 
-            if event.type == py.KEYDOWN:
-                if event.key == py.K_SPACE:
-                    print('test')
 
     # Game loop
     def mainloop(self):
 
         while True:
 
-            self.screen.fill((250, 52, 25))
-            self.check_events()
-    
-            if self.game_state == "menu":
+            self.screen.fill((250, 52, 25)) # Background color
+            # self.check_events()
 
-                # draw buttons
-                # Simply means that the button has been clicked, returns a boolean
+            for event in py.event.get():
+                # Allows to quit the application correctly
+                if event.type == py.QUIT:
+                    py.quit()
+                    sys.exit()
+                elif event.type  == py.MOUSEBUTTONDOWN or event.type == py.MOUSEBUTTONUP: 
+                    pass
+                # This is a test
+                elif event.type == py.KEYDOWN or event.type == py.KEYUP:
+                    if event.key == py.K_SPACE:
+                        print('test')
+            
+            if self.game_state == "menu": # If the game is in the menu stat, it will display the menu
                 
-                # Buttons are clicked two by two, why? Try to change the coords in the blit method. It worked, buttons were too close to each other. I think it is due to the actual size of the pictures themselves
                 if self.start_button.display(self.screen):
                     # self.game_state = 'settings'
-                    self.game_state = 'game'
+                    self.game_state = 'utils' # the start game must redirect the user to the 'utils' page which will then bring him to the game
                 if self.help_button.display(self.screen): self.game_state = 'help' # Simply means that the button has been clicked, returns a boolean
-
-
 
 
                 if self.quit_button.display(self.screen):  # Simply means that the button has been clicked, returns a boolean
@@ -147,16 +217,27 @@ class Game():
                     sys.exit()
 
 
-            elif self.game_state == 'help':
+            elif self.game_state == 'help': # else if the game is in the 'help' state, it will display the help menu
                 # Display the rules
                 if self.back_button.display(self.screen): self.game_state = 'menu'
                 
-            elif self.game_state == 'game':
+            elif self.game_state == 'game': # else if the game is in the 'game' state, it will launch the game
                 self.show_board(self.screen)
                 self.show_pawns()
 
+            elif self.game_state == 'utils': 
+                pygame_widgets.update(py.event.poll())
+                # utils.ROWS = self.board_size.getSelected()
+                # print(utils.ROWS)
+                if self.back_button.display(self.screen): self.game_state = 'menu'
+                if self.resume_button.display(self.screen): self.game_state = 'game'
+
+
+
+
 
             self.clock.tick(60)
+            
             py.display.update()
             
 
