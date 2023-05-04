@@ -1,48 +1,26 @@
-import pygame_widgets
 import pygame
-from pygame_widgets.button import Button
-from pygame_widgets.dropdown import Dropdown
+from pygame.locals import *
+
+SIZE = 500, 200
+RED = (255, 0, 0)
+GRAY = (150, 150, 150)
 
 pygame.init()
-win = pygame.display.set_mode((400, 280))
-
-run = True
-while run:
-    events = pygame.event.get()
-    for event in events:
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            run = False
-            quit()
+screen = pygame.display.set_mode(SIZE)
 
 
 
-    dropdown = Dropdown(
-        win, 120, 10, 100, 50, name='Select Color',
-        choices=[
-            'Red',
-            'Blue',
-            'Yellow',
-        ],
-        borderRadius=3, colour=pygame.Color('green'), values=[1, 2, 'true'], direction='down', textHAlign='left'
-    )
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            running = False
 
+    # screen.fill(GRAY)
+    for x in range(5):
+        for y in range(5):
+            rect = Rect(x * (500//8), y * (500//8), 200, 80)
+            pygame.draw.rect(screen, 'blue', rect)
+            pygame.display.flip()
 
-    def print_value():
-        print(dropdown.getSelected())
-
-
-    button = Button(
-        win, 10, 10, 100, 50, text='Print Value', fontSize=30,
-        margin=20, inactiveColour=(255, 0, 0), pressedColour=(0, 255, 0),
-        radius=5, onClick=print_value, font=pygame.font.SysFont('calibri', 10),
-        textVAlign='bottom'
-    )
-
-
-    win.fill((255, 255, 255))
-
-    pygame_widgets.update(events)
-    pygame.display.update()
-
-
+pygame.quit()

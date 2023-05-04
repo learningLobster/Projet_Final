@@ -10,13 +10,14 @@ class Case:
         self.col = col
         self.pawn = pawn
         self.fence = fence
-        self.moves()
+        # self.moves()
         
 
 
     # Will make the moves
-    def moves(self):
-        pass
+    def show_moves(self):
+        # If i click on any square, change the fill
+        print("This test works!")
 
     # Calculates the possible
     def calc_moves(self):
