@@ -37,6 +37,7 @@ class Game():
         # Game state variables
         # self.game_paused = False
         self.game_state = 'menu'
+        self.clicked = False
 
         # Move related variables
         self.last_move = None  # I don't think I'll need but it can be useful
@@ -100,63 +101,6 @@ class Game():
         )
 
 
-    # Show_methods
-    def show_board(self, screen):
-        screen.fill(theme.board_color)  # Board color (119, 154, 88)
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
-
-                # Squares
-                # rectangle dimensions, the format is (row, col, width, height)
-                squares_rect = (col * utils.SQSIZE, row *
-                                utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
-                # Is the "self" really necessary?
-                self.squares = py.draw.rect(
-                    screen, theme.board_color, squares_rect, 1) # Lines colors
-                # self.squares got collidepoint as well
-
-
-    def show_walls(self, screen):
-        # test colors
-        RED = (255, 0, 0)
-        blc = (0, 0, 0)
-
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
-                # Horizontal wall spots
-                horiz_rect = (
-                    col * utils.SQSIZE, 
-                    (row+1) * utils.SQSIZE, 
-                    utils.SQSIZE, 
-                    10
-                    )
-                horizontal_walls = py.draw.rect(screen, RED, horiz_rect, 1)
-
-                # Vertical walls
-                vert_rect = (
-                    (col+1) * utils.SQSIZE, 
-                    row * utils.SQSIZE, 
-                    10, 
-                    utils.SQSIZE
-                    )
-                vert_walls = py.draw.rect(screen, RED, vert_rect)
-
-                # Click handler
-                pos = py.mouse.get_pos()
-                if horizontal_walls.collidepoint(pos):
-                    # and self.clicked == False:
-                    if py.mouse.get_pressed()[0] == 1 and not self.dragger.dragging:
-                        # self.clicked = True
-                        horizontal_walls = py.draw.rect(
-                            screen, blc, horiz_rect, 1)
-
-                if vert_walls.collidepoint(pos):
-                    # and self.clicked == False:
-                    if py.mouse.get_pressed()[0] == 1:
-                        # self.clicked = True
-                        vert_walls = py.draw.rect(screen, blc, vert_rect, 1)
-
-
     # Set the postion of each pawn in the console board
     def set_pawn_position(self, row, col, color):
         if color == "white":
@@ -170,81 +114,8 @@ class Game():
         return self.cases[row][col]
     
 
-    # Display pawns
-    def show_pawns(self, screen):
-
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
-                # I position the pawns in this loop
-                
-                if self.cases[row][col].has_pawn():  # Check if the square has a pawn
-                    pawn = self.cases[row][col].pawn
-
-                    if pawn is not self.dragger.pawn:
-                        # Draws(blits) the pawns and nothing else
-                        img_rect = col * utils.SQSIZE + utils.SQSIZE // 2, \
-                            row * utils.SQSIZE + utils.SQSIZE // 2  # Put the piece at the center of the square
-
-                        if pawn.color == 'white':
-                            white_img = self.white_pawn.img
-                            white_rect = white_img.get_rect(center=img_rect)
-                            screen.blit(
-                                white_img,  # This is the image
-                                white_rect
-                            )
-
-                        elif pawn.color == 'red':
-                            red_img = self.red_pawn.img
-                            red_rect = red_img.get_rect(center=img_rect)
-                            screen.blit(
-                                red_img,  # This is the image
-                                red_rect
-                            )
-
-                        elif pawn.color == 'black':
-                            black_img = self.black_pawn.img
-                            black_rect = black_img.get_rect(center=img_rect)
-                            screen.blit(
-                                black_img,  # This is the image
-                                black_rect
-                            )
-                            
-                        elif pawn.color == 'green': # You can use an else
-                            green_img = self.green_pawn.img
-                            green_rect = green_img.get_rect(center=img_rect)
-                            screen.blit(
-                                green_img,  # This is the image
-                                green_rect
-                            )
-                        
-                        print(
-                            f"{pawn.color}'s row: {self.cases[row][col].row}")
-                        print(f"{pawn.color}'s col: {self.cases[row][col].col}")
-                        # print(f"{self.white_pawn.color}'s row: {self.white_pawn.row}")
-                        # print(f"{self.white_pawn.color}'s col: {self.white_pawn.col}")
-                        # print(f"{self.black_pawn.color}'s row: {self.black_pawn.row}")
-                        # print(f"{self.black_pawn.color}'s col: {self.black_pawn.col}")
-                        # print(f"{self.green_pawn.color}'s row: {self.green_pawn.row}")
-                        # print(f"{self.green_pawn.color}'s col: {self.green_pawn.col}")
-
-
-    def show_moves(self, screen):
-        if self.dragger.dragging:
-            pawn = self.dragger.pawn
-
-            # Loop all valid moves
-            for move in pawn.moves:
-                # color
-                color = 'cyan'  # You should definitely change this color
-                # color = 'blue' if (move.final.row+move.final.col) % 2 == 0 else 'lightblue'
-                # rect
-                rect = (move.final.col * utils.SQSIZE, move.final.row *
-                        utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
-                # blit
-                py.draw.rect(screen, color, rect)
-
-
-    def calc_moves(self, pawn, row, col): # Calc move works perfectly, at least it returns the right squares. It does return the right result
+    # Defines possible moves
+    def define_moves(self, pawn, row, col): # Calc move works perfectly, at least it returns the right squares. It does return the right result
         number = 0 # Don't think I really need this anymore, It was used to debug the chess problem
         """
             Calculates the possible moves
@@ -295,6 +166,7 @@ class Game():
                 # elif self.cases[possible_move_row][possible_move_col].has_pawn():
                     
 
+    # Moves pawns
     def move_pawn(self, pawn, move):
 
         initial = move.initial
@@ -319,6 +191,143 @@ class Game():
             return move in pawn.moves
     
 
+    # Show methods
+
+
+    # Displays board
+    def show_board(self, screen):
+        screen.fill(theme.board_color)  # Board color (119, 154, 88)
+        for row in range(utils.ROWS):
+            for col in range(utils.COLS):
+
+                # Squares
+                # rectangle dimensions, the format is (row, col, width, height)
+                squares_rect = (col * utils.SQSIZE, row *
+                                utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
+                # Is the "self" really necessary?
+                squares = py.draw.rect(
+                    screen, theme.walls_color, squares_rect, 5) # Lines colors
+                # self.squares got collidepoint as well
+                
+                pos = py.mouse.get_pos()
+                if squares.collidepoint(pos):
+                    if py.mouse.get_pressed()[0] == 1:
+                        print(pos)
+
+
+    # # Displays walls
+    # def show_walls(self, screen):
+    #     # test colors
+    #     RED = (255, 0, 0)
+    #     blc = (0, 0, 0)
+
+    #     for row in range(utils.ROWS):
+    #         for col in range(utils.COLS):
+    #             # Horizontal wall spots
+    #             horiz_rect = (
+    #                 col * utils.SQSIZE, 
+    #                 (row+1) * utils.SQSIZE, 
+    #                 utils.SQSIZE, 
+    #                 10
+    #                 )
+    #             horizontal_walls = py.draw.rect(screen, RED, horiz_rect, 1)
+
+    #             # Vertical walls
+    #             vert_rect = (
+    #                 (col+1) * utils.SQSIZE, 
+    #                 row * utils.SQSIZE, 
+    #                 10, 
+    #                 utils.SQSIZE
+    #                 )
+    #             vert_walls = py.draw.rect(screen, RED, vert_rect)
+
+    #             # Click handler
+    #             pos = py.mouse.get_pos()
+    #             if horizontal_walls.collidepoint(pos) and self.clicked == False:
+    #                 # and self.clicked == False:
+    #                 if py.mouse.get_pressed()[0] == 1 and not self.dragger.dragging:
+    #                     self.clicked = True
+    #                     horizontal_walls = py.draw.rect(
+    #                         screen, blc, horiz_rect, 1)
+
+    #             if vert_walls.collidepoint(pos):
+    #                 # and self.clicked == False:
+    #                 if py.mouse.get_pressed()[0] == 1:
+    #                     # self.clicked = True
+    #                     vert_walls = py.draw.rect(screen, blc, vert_rect, 1)
+
+
+
+    # Display pawns
+    def show_pawns(self, screen):
+
+        for row in range(utils.ROWS):
+            for col in range(utils.COLS):
+                # I position the pawns in this loop
+                
+                if self.cases[row][col].has_pawn():  # Check if the square has a pawn
+                    pawn = self.cases[row][col].pawn
+
+                    if pawn is not self.dragger.pawn:
+                        # Draws(blits) the pawns and nothing else
+                        img_rect = col * utils.SQSIZE + utils.SQSIZE // 2, \
+                            row * utils.SQSIZE + utils.SQSIZE // 2  # Put the piece at the center of the square
+
+                        if pawn.color == 'white':
+                            white_img = self.white_pawn.img
+                            white_rect = white_img.get_rect(center=img_rect)
+                            screen.blit(
+                                white_img,  # This is the image
+                                white_rect
+                            )
+
+                        elif pawn.color == 'red':
+                            red_img = self.red_pawn.img
+                            red_rect = red_img.get_rect(center=img_rect)
+                            screen.blit(
+                                red_img,  # This is the image
+                                red_rect
+                            )
+
+                        elif pawn.color == 'black':
+                            black_img = self.black_pawn.img
+                            black_rect = black_img.get_rect(center=img_rect)
+                            screen.blit(
+                                black_img,  # This is the image
+                                black_rect
+                            )
+                            
+                        elif pawn.color == 'green': # You can use an else
+                            green_img = self.green_pawn.img
+                            green_rect = green_img.get_rect(center=img_rect)
+                            screen.blit(
+                                green_img,  # This is the image
+                                green_rect
+                            )
+                        
+                        # print(
+                        #     f"{pawn.color}'s row: {self.cases[row][col].row}")
+                        # print(f"{pawn.color}'s col: {self.cases[row][col].col}")
+
+
+
+    # Displays moves
+    def show_moves(self, screen):
+        if self.dragger.dragging:
+            pawn = self.dragger.pawn
+
+            # Loop all valid moves
+            for move in pawn.moves:
+                # color
+                color = 'cyan'  # You should definitely change this color
+                # color = 'blue' if (move.final.row+move.final.col) % 2 == 0 else 'lightblue'
+                # rect
+                rect = (move.final.col * utils.SQSIZE, move.final.row *
+                        utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
+                # blit
+                py.draw.rect(screen, color, rect)
+
+
     # Event handler
     def check_events(self):
 
@@ -337,12 +346,10 @@ class Game():
                     pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
 
                     if pawn.color == self.player:
-                        self.calc_moves(pawn, clicked_row, clicked_col)
+                        self.define_moves(pawn, clicked_row, clicked_col)
                         self.dragger.save_initial(event.pos) # Saves the initial position of the pawn
                         self.dragger.drag_pawn(pawn)
                         self.show_moves(self.screen)
-                    
-                    
 
             if event.type == py.MOUSEMOTION:
                 # If we are dragging the pawn
@@ -441,7 +448,7 @@ class Game():
                 py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn')  # sets the screen title
                 self.show_board(self.screen)
                 self.show_moves(self.screen)
-                self.show_walls(self.screen)
+                # self.show_walls(self.screen)
                 self.show_pawns(self.screen)
 
                 if self.dragger.dragging:
