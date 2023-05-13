@@ -102,7 +102,7 @@ class Game():
 
     # Show_methods
     def show_board(self, screen):
-        screen.fill((119, 154, 88))  # Board color
+        screen.fill(theme.board_color)  # Board color (119, 154, 88)
         for row in range(utils.ROWS):
             for col in range(utils.COLS):
 
@@ -112,7 +112,8 @@ class Game():
                                 utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
                 # Is the "self" really necessary?
                 self.squares = py.draw.rect(
-                    screen, theme.board_color, squares_rect, 1)
+                    screen, theme.board_color, squares_rect, 1) # Lines colors
+                # self.squares got collidepoint as well
 
 
     def show_walls(self, screen):
