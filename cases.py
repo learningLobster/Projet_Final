@@ -10,36 +10,28 @@ class Case:
         self.col = col
         self.pawn = pawn
         self.fence = fence
-        # self.moves()
-        
+
+
     def __eq__(self, other):
         return self.row == other.row and self.col == other.col
 
-    # Will make the moves
-    def show_moves(self):
-        # If i click on any square, change the fill
-        print("This test works!")
-
-    # Calculates the possible
-    def calc_moves(self):
-        pass
     
     # Check if there is a pawn
     def has_pawn(self):
-        return self.pawn != None
+        return self.pawn != None # Returns True or False
 
     # check if there is a fence
     def has_fence(self): # Currenctly fences are being drawn directly onto the screen, try to move it to this function instead
         return self.fence != None
     
-    def has_ennemy(self, color):
-        return self.has_pawn() and self.pawn.color != color
+    def has_enemy(self, color): # This function doesn't work properly I think
+        return self.has_pawn() and self.pawn.color != color # If the pawn color is different from the color parameter
 
     def empty(self):
         return not self.has_pawn()
 
     def empty_or_ennemy(self, color):
-        return self.empty() or self.has_ennemy(color)
+        return self.empty() or self.has_enemy(color)
         
     
     # When moving a piece it tells us the possible square inside the board

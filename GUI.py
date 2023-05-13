@@ -11,7 +11,7 @@ import menu_button as button
 import theme
 from cases import Case
 from pawn import Pawn
-from dragger import Dragger
+from dragger import Dragger   
 from move import Move
 
 
@@ -40,18 +40,26 @@ class Game():
 
         # Move related variables
         self.last_move = None  # I don't think I'll need but it can be useful
+        # self.player = "white"
+        self.player = "white"
 
         # Pawns
         self.red_pawn = Pawn('red')
         self.white_pawn = Pawn('white')
+        self.black_pawn = Pawn('black')
+        self.green_pawn = Pawn('green')
 
         # Load the pawn images
         self.red_piece = self.red_pawn.img.convert_alpha()
         self.white_piece = self.white_pawn.img.convert_alpha()
+        self.black_piece = self.black_pawn.img.convert_alpha()
+        self.green_piece = self.green_pawn.img.convert_alpha()
 
         # Position the pawns in the console board
         self.set_pawn_position(utils.ROWS//2, 0, "red")
         self.set_pawn_position(utils.ROWS//2, -1, "white")
+        self.set_pawn_position(0, utils.ROWS//2, "black")
+        self.set_pawn_position(-1, utils.ROWS//2, "green")
 
         # Load button images
         help_img = py.image.load("assets\\help_button.png").convert_alpha()
@@ -154,6 +162,10 @@ class Game():
             self.cases[row][col] = Case(row, col, self.white_pawn)
         elif color == "red":
             self.cases[row][col] = Case(row, col, self.red_pawn)
+        elif color == "black":
+            self.cases[row][col] = Case(row, col, self.black_pawn)
+        elif color == "green": # Or you can use an else statement
+            self.cases[row][col] = Case(row, col, self.green_pawn)
         return self.cases[row][col]
     
 
@@ -166,6 +178,7 @@ class Game():
                 
                 if self.cases[row][col].has_pawn():  # Check if the square has a pawn
                     pawn = self.cases[row][col].pawn
+
                     if pawn is not self.dragger.pawn:
                         # Draws(blits) the pawns and nothing else
                         img_rect = col * utils.SQSIZE + utils.SQSIZE // 2, \
@@ -187,6 +200,32 @@ class Game():
                                 red_rect
                             )
 
+                        elif pawn.color == 'black':
+                            black_img = self.black_pawn.img
+                            black_rect = black_img.get_rect(center=img_rect)
+                            screen.blit(
+                                black_img,  # This is the image
+                                black_rect
+                            )
+                            
+                        elif pawn.color == 'green': # You can use an else
+                            green_img = self.green_pawn.img
+                            green_rect = green_img.get_rect(center=img_rect)
+                            screen.blit(
+                                green_img,  # This is the image
+                                green_rect
+                            )
+                        
+                        print(
+                            f"{pawn.color}'s row: {self.cases[row][col].row}")
+                        print(f"{pawn.color}'s col: {self.cases[row][col].col}")
+                        # print(f"{self.white_pawn.color}'s row: {self.white_pawn.row}")
+                        # print(f"{self.white_pawn.color}'s col: {self.white_pawn.col}")
+                        # print(f"{self.black_pawn.color}'s row: {self.black_pawn.row}")
+                        # print(f"{self.black_pawn.color}'s col: {self.black_pawn.col}")
+                        # print(f"{self.green_pawn.color}'s row: {self.green_pawn.row}")
+                        # print(f"{self.green_pawn.color}'s col: {self.green_pawn.col}")
+
 
     def show_moves(self, screen):
         if self.dragger.dragging:
@@ -195,7 +234,7 @@ class Game():
             # Loop all valid moves
             for move in pawn.moves:
                 # color
-                color = 'blue'  # You should definitely change this color
+                color = 'cyan'  # You should definitely change this color
                 # color = 'blue' if (move.final.row+move.final.col) % 2 == 0 else 'lightblue'
                 # rect
                 rect = (move.final.col * utils.SQSIZE, move.final.row *
@@ -204,8 +243,8 @@ class Game():
                 py.draw.rect(screen, color, rect)
 
 
-    # I think this function can be moved to cases file. Yes it can, just need to add the cases parameter then it is all good
-    def calc_moves(self, pawn, row, col):
+    def calc_moves(self, pawn, row, col): # Calc move works perfectly, at least it returns the right squares. It does return the right result
+        number = 0 # Don't think I really need this anymore, It was used to debug the chess problem
         """
             Calculates the possible moves
         """
@@ -222,15 +261,38 @@ class Game():
 
             if Case.in_range(possible_move_row, possible_move_col): # If the moves are in range of the board(if they don't exceed the board size)
                 if self.cases[possible_move_row][possible_move_col].empty():
+                    if not self.cases[possible_move_row][possible_move_col].has_pawn():
+                    
+                        # A debug, I think?
+                        if self.cases[possible_move_row][possible_move_col].pawn != None:
+                            print(number)
 
-                    # Creates new cases
-                    initial = Case(row, col)
-                    final = Case(possible_move_row, possible_move_col)
+                
+                        # Creates new cases
+                        initial = Case(row, col)
+                        final = Case(possible_move_row, possible_move_col)
 
-                    # Create new move
-                    move = Move(initial, final)
-                    pawn.add_move(move)
+                        # Create new move
+                        move = Move(initial, final)
+                        pawn.add_move(move)
 
+                        number += 1
+                    
+                else: #self.cases[possible_move_row][possible_move_col].has_pawn(): # I can either use this condition to make the code perfect or I can just make a turn function and that should do the trick
+                    enemy_pos = self.cases[possible_move_row][possible_move_col]
+
+                    # It is 00:46 on the 11/05/2023, you are tired and your nested condition are getting messy. You should definitely check them and prevent them from jumping two squares
+                    if enemy_pos.row == row:
+                        possible_moves.append((enemy_pos.row, enemy_pos.col+1))
+
+                    elif enemy_pos.col == col:
+                        possible_moves.append((enemy_pos.row+1, enemy_pos.col))
+                    
+                    elif (enemy_pos.row == row) and (enemy_pos.col == col):  # Don't know if I could use an else instead
+                        possible_moves.append((enemy_pos.row+1, enemy_pos.col))
+                        possible_moves.append((enemy_pos.row, enemy_pos.col+1))
+                # elif self.cases[possible_move_row][possible_move_col].has_pawn():
+                    
 
     def move_pawn(self, pawn, move):
 
@@ -272,10 +334,14 @@ class Game():
 
                 if self.cases[clicked_row][clicked_col].has_pawn(): # Checks wether the clicked cell has a pawn
                     pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
-                    self.calc_moves(pawn, clicked_row, clicked_col)
-                    self.dragger.save_initial(event.pos) # Saves the initial position of the pawn
-                    self.dragger.drag_pawn(pawn)
-                    self.show_moves(self.screen)
+
+                    if pawn.color == self.player:
+                        self.calc_moves(pawn, clicked_row, clicked_col)
+                        self.dragger.save_initial(event.pos) # Saves the initial position of the pawn
+                        self.dragger.drag_pawn(pawn)
+                        self.show_moves(self.screen)
+                    
+                    
 
             if event.type == py.MOUSEMOTION:
                 # If we are dragging the pawn
@@ -301,8 +367,37 @@ class Game():
                 # print('test successful')
                     if self.dragger.pawn != None:
                         self.move_pawn(self.dragger.pawn, move)
+                        self.turn(4) # You should really use a variable here
 
                 self.dragger.undrag_pawn()
+                
+
+    def turn(self, number):
+
+        if number == 2:
+            if self.player== "white":
+                self.player = "red"
+            else: self.player = "white"
+
+        if number == 3:
+            if self.player == "white":
+                self.player = "red"
+            
+            elif self.player == "red": self.player = "green"
+            else:
+                self.player = "white"
+
+        if number == 4:
+            if self.player == "white":
+                self.player = "red"
+
+            elif self.player == "red":
+                self.player = "green"
+            
+            elif self.player == "green": self.player = "black"
+            else:
+                self.player = "white"
+        
 
 
     # Game loop
@@ -342,6 +437,7 @@ class Game():
                     self.game_state = 'menu'
 
             elif self.game_state == 'game':
+                py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn')  # sets the screen title
                 self.show_board(self.screen)
                 self.show_moves(self.screen)
                 self.show_walls(self.screen)
