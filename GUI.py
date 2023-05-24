@@ -3,10 +3,12 @@ import pygame as py
 import sys
 import pygame_widgets
 from pygame_widgets.dropdown import Dropdown
+import pyautogui as popup # This module is used to display Pop-ups # For some reason it shrinks the game window
+
 
 
 # Project files
-import utils
+import config
 import menu_button as button
 import theme
 from cases import Case
@@ -15,34 +17,47 @@ from dragger import Dragger
 from move import Move
 
 
+
 class Game():
     def __init__(self):
+
+
+        
+        config.theme_sound() # Ce est supposé se trouver danq la mainloop mais il renvoi une erreur, je l'ai donc mis là
 
         # Create game Window
         py.init()  # It is imperative to put this in the code, because it initializes all pygame modules
         self.screen = py.display.set_mode(
-            (utils.SCREEN_WIDTH, utils.SCREEN_HEIGHT))  # Set the screen dimensions
+            (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))  # Set the screen dimensions
         py.display.set_caption('Quorridor')  # sets the screen title
         self.clock = py.time.Clock()
         self.dragger = Dragger()
 
         # This is my console board
-        self.cases = [[0] * utils.COLS for i in range(utils.COLS)]
+        self.cases = [[0] * config.COLS for i in range(config.COLS)]
         # Turn squares into instances of another class(will serve to add some properties)
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
+        for row in range(config.ROWS):
+            for col in range(config.COLS):
                 # Will give to each square the properties of the Case class
                 self.cases[row][col] = Case(row, col)
 
         # Game state variables
         # self.game_paused = False
         self.game_state = 'menu'
+        self.all_players = ["white", "red", "black", "green"]
+        self.actual_players = []
         self.clicked = False
+        self.idx = 0
+        # Add player
+        for number in range(config.NUM_OF_PLAYERS):
+            self.actual_players.append(self.all_players[number])
+        self.player = self.actual_players[self.idx]
 
         # Move related variables
         self.last_move = None  # I don't think I'll need but it can be useful
         # self.player = "white"
-        self.player = "white"
+        
+        
 
         # Pawns
         self.red_pawn = Pawn('red')
@@ -57,46 +72,55 @@ class Game():
         self.green_piece = self.green_pawn.img.convert_alpha()
 
         # Position the pawns in the console board
-        self.set_pawn_position(utils.ROWS//2, 0, "red")
-        self.set_pawn_position(utils.ROWS//2, -1, "white")
-        self.set_pawn_position(0, utils.ROWS//2, "black")
-        self.set_pawn_position(-1, utils.ROWS//2, "green")
+        match(config.NUM_OF_PLAYERS):
+            case 2:
+                self.set_pawn_position(config.ROWS//2, 0, "red")
+                self.set_pawn_position(config.ROWS//2, -1, "white")
+            case 3:
+                self.set_pawn_position(config.ROWS//2, 0, "red")
+                self.set_pawn_position(config.ROWS//2, -1, "white")
+                self.set_pawn_position(0, config.ROWS//2, "black")
+            case 4:
+                self.set_pawn_position(config.ROWS//2, 0, "red")
+                self.set_pawn_position(config.ROWS//2, -1, "white")
+                self.set_pawn_position(0, config.ROWS//2, "black")
+                self.set_pawn_position(-1, config.ROWS//2, "green")
 
         # Load button images
-        help_img = py.image.load("assets\\help_button.png").convert_alpha()
-        quit_img = py.image.load("assets\\quit_button.png").convert_alpha()
-        start_img = py.image.load("assets\\start_button.png").convert_alpha()
-        back_img = py.image.load("assets\\back_button.png").convert_alpha()
-        resume_img = py.image.load("assets\\resume_button.png").convert_alpha()
+        help_img = py.image.load("assets\Pictures\\help_button.png").convert_alpha()
+        quit_img = py.image.load("assets\Pictures\\quit_button.png").convert_alpha()
+        start_img = py.image.load("assets\Pictures\\start_button.png").convert_alpha()
+        back_img = py.image.load("assets\Pictures\\back_button.png").convert_alpha()
+        resume_img = py.image.load("assets\Pictures\\resume_button.png").convert_alpha()
 
         # create button instances
         self.start_button = button.Button(
-            utils.width_prct(40),  # x position
-            utils.height_prct(25),  # y position
+            config.width_prct(40),  # x position
+            config.height_prct(25),  # y position
             start_img,  # The image
         )
 
         self.help_button = button.Button(
-            utils.width_prct(40),
-            utils.height_prct(45),
+            config.width_prct(40),
+            config.height_prct(45),
             help_img,  # The image
         )
 
         self.quit_button = button.Button(
-            utils.width_prct(40),
-            utils.height_prct(65),
+            config.width_prct(40),
+            config.height_prct(65),
             quit_img,
         )
 
         self.back_button = button.Button(
-            utils.width_prct(60),  # x coordinate
-            utils.height_prct(85),  # y coordinate
+            config.width_prct(60),  # x coordinate
+            config.height_prct(85),  # y coordinate
             back_img,
         )
 
         self.resume_button = button.Button(
-            utils.width_prct(25),
-            utils.height_prct(85),
+            config.width_prct(25),
+            config.height_prct(85),
             resume_img,
         )
 
@@ -138,7 +162,6 @@ class Game():
                         # A debug, I think?
                         if self.cases[possible_move_row][possible_move_col].pawn != None:
                             print(number)
-
                 
                         # Creates new cases
                         initial = Case(row, col)
@@ -191,32 +214,33 @@ class Game():
             return move in pawn.moves
     
 
-    # Show methods
+    # display methods
 
 
     # Displays board
-    def show_board(self, screen):
+    def display_board(self, screen):
         screen.fill(theme.board_color)  # Board color (119, 154, 88)
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
+        for row in range(config.ROWS):
+            for col in range(config.COLS):
 
                 # Squares
                 # rectangle dimensions, the format is (row, col, width, height)
-                squares_rect = (col * utils.SQSIZE, row *
-                                utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
+                squares_rect = (col * config.SQSIZE, row *
+                                config.SQSIZE, config.SQSIZE, config.SQSIZE)
                 # Is the "self" really necessary?
                 squares = py.draw.rect(
-                    screen, theme.walls_color, squares_rect, 5) # Lines colors
+                    screen, theme.walls_color, squares_rect, 5, 5) # Lines colors
                 # self.squares got collidepoint as well
                 
                 pos = py.mouse.get_pos()
                 if squares.collidepoint(pos):
                     if py.mouse.get_pressed()[0] == 1:
-                        print(pos)
+                        # print(pos)
+                        pass
 
 
     # # Displays walls
-    # def show_walls(self, screen):
+    # def display_walls(self, screen):
     #     # test colors
     #     RED = (255, 0, 0)
     #     blc = (0, 0, 0)
@@ -259,10 +283,10 @@ class Game():
 
 
     # Display pawns
-    def show_pawns(self, screen):
+    def display_pawns(self, screen):
 
-        for row in range(utils.ROWS):
-            for col in range(utils.COLS):
+        for row in range(config.ROWS):
+            for col in range(config.COLS):
                 # I position the pawns in this loop
                 
                 if self.cases[row][col].has_pawn():  # Check if the square has a pawn
@@ -270,8 +294,8 @@ class Game():
 
                     if pawn is not self.dragger.pawn:
                         # Draws(blits) the pawns and nothing else
-                        img_rect = col * utils.SQSIZE + utils.SQSIZE // 2, \
-                            row * utils.SQSIZE + utils.SQSIZE // 2  # Put the piece at the center of the square
+                        img_rect = col * config.SQSIZE + config.SQSIZE // 2, \
+                            row * config.SQSIZE + config.SQSIZE // 2  # Put the piece at the center of the square
 
                         if pawn.color == 'white':
                             white_img = self.white_pawn.img
@@ -312,20 +336,50 @@ class Game():
 
 
     # Displays moves
-    def show_moves(self, screen):
+    def display_moves(self, screen):
         if self.dragger.dragging:
             pawn = self.dragger.pawn
 
             # Loop all valid moves
             for move in pawn.moves:
                 # color
-                color = 'cyan'  # You should definitely change this color
+                color = theme.moves_color  # You should definitely change this color
                 # color = 'blue' if (move.final.row+move.final.col) % 2 == 0 else 'lightblue'
                 # rect
-                rect = (move.final.col * utils.SQSIZE, move.final.row *
-                        utils.SQSIZE, utils.SQSIZE, utils.SQSIZE)
+                rect = (move.final.col * config.SQSIZE, move.final.row *
+                        config.SQSIZE, config.SQSIZE, config.SQSIZE)
                 # blit
                 py.draw.rect(screen, color, rect)
+
+        
+    def check_win(self, pawn, final):
+        
+        if final.row == 0 and pawn.color == 'green':
+            print(f"Green wins!")
+            self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
+            popup.alert(text="Green wins", title="Game Message", button="Ok")
+            self.actual_players.remove("green")
+
+        elif final.row == (config.ROWS-1) and pawn.color == 'black':
+
+            print(self.cases[final.row][final.col].pawn.color)
+            self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
+            popup.alert(text="Black wins", title="Game Message", button="Ok")
+            self.actual_players.remove("black")
+
+        elif final.col == (config.ROWS-1) and pawn.color == 'red':
+
+            self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
+            popup.alert(text="Red wins", title="Game Message", button="Ok")
+            self.actual_players.remove("red")
+
+        elif final.col == 0 and pawn.color == "white":
+
+            self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
+            popup.alert(text="White wins", title="Game Message", button="Ok")
+            self.actual_players.remove("white")
+
+        
 
 
     # Event handler
@@ -339,8 +393,8 @@ class Game():
 
             if event.type == py.MOUSEBUTTONDOWN:
                 self.dragger.update_mouse(event.pos) # update the mouse position
-                clicked_row = self.dragger.pos_y // utils.SQSIZE # Returns the row that was clicked
-                clicked_col = self.dragger.pos_x // utils.SQSIZE # Returns the column that was clicked
+                clicked_row = self.dragger.pos_y // config.SQSIZE # Returns the row that was clicked
+                clicked_col = self.dragger.pos_x // config.SQSIZE # Returns the column that was clicked
 
                 if self.cases[clicked_row][clicked_col].has_pawn(): # Checks wether the clicked cell has a pawn
                     pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
@@ -349,21 +403,21 @@ class Game():
                         self.define_moves(pawn, clicked_row, clicked_col)
                         self.dragger.save_initial(event.pos) # Saves the initial position of the pawn
                         self.dragger.drag_pawn(pawn)
-                        self.show_moves(self.screen)
+                        self.display_moves(self.screen)
 
             if event.type == py.MOUSEMOTION:
                 # If we are dragging the pawn
                 if self.dragger.dragging:
                     self.dragger.update_mouse(event.pos)
-                    self.show_moves(self.screen)
+                    self.display_moves(self.screen)
                     self.dragger.update_screen(self.screen)
 
             if event.type == py.MOUSEBUTTONUP:
                 if self.dragger.dragging:
                     self.dragger.update_mouse(event.pos)
 
-                released_row = self.dragger.pos_y // utils.SQSIZE
-                released_col = self.dragger.pos_x // utils.SQSIZE
+                released_row = self.dragger.pos_y // config.SQSIZE
+                released_col = self.dragger.pos_x // config.SQSIZE
 
                 # Create possible move
                 initial = Case(self.dragger.initial_row, self.dragger.initial_col)
@@ -375,37 +429,19 @@ class Game():
                 # print('test successful')
                     if self.dragger.pawn != None:
                         self.move_pawn(self.dragger.pawn, move)
-                        self.turn(4) # You should really use a variable here
+                        self.check_win(self.dragger.pawn, final)
+                        self.turn() # You should really use a variable here
+                        print(self.idx)
+                        # Move sound
+                        config.move_sound()
 
-                self.dragger.undrag_pawn()
+                self.dragger.undrag_pawn()                    
                 
 
-    def turn(self, number):
-
-        if number == 2:
-            if self.player== "white":
-                self.player = "red"
-            else: self.player = "white"
-
-        if number == 3:
-            if self.player == "white":
-                self.player = "red"
-            
-            elif self.player == "red": self.player = "green"
-            else:
-                self.player = "white"
-
-        if number == 4:
-            if self.player == "white":
-                self.player = "red"
-
-            elif self.player == "red":
-                self.player = "green"
-            
-            elif self.player == "green": self.player = "black"
-            else:
-                self.player = "white"
-        
+    def turn(self):
+        self.idx += 1
+        self.idx %= len(self.actual_players)  
+        self.player = self.actual_players[self.idx]      
 
 
     # Game loop
@@ -430,6 +466,7 @@ class Game():
         while True:
             self.screen.fill((250, 52, 25))  # Background color
             self.check_events()
+            
 
             if self.game_state == "menu":
                 if self.start_button.display(self.screen):
@@ -446,10 +483,12 @@ class Game():
 
             elif self.game_state == 'game':
                 py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn')  # sets the screen title
-                self.show_board(self.screen)
-                self.show_moves(self.screen)
-                # self.show_walls(self.screen)
-                self.show_pawns(self.screen)
+                self.display_board(self.screen)
+                self.display_moves(self.screen)
+                # self.display_walls(self.screen)
+                self.display_pawns(self.screen)
+
+                # config.theme_sound()
 
                 if self.dragger.dragging:
                     self.dragger.update_screen(self.screen)

@@ -1,6 +1,6 @@
 # Each square of the board is an instance of this class, thus the move methods will be coded here.
 
-import utils
+import config
 import pygame
 
 class Case:
@@ -38,7 +38,7 @@ class Case:
     @staticmethod # A static method is a method that lets us access the methods inside a class without having an instance of that said class
     def in_range(*args):  # *args tells python that this method can recive as many arguments as necessary
         for arg in args:
-            if arg < 0 or arg > utils.ROWS-1:               
+            if arg < 0 or arg > config.ROWS-1:               
                 return False
         return True
 

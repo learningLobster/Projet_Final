@@ -1,5 +1,5 @@
 import pygame as py
-import utils
+import config
 
 class Dragger:
     def __init__(self):
@@ -15,8 +15,8 @@ class Dragger:
 
     def save_initial(self, pos): # Initial position
         # Come up with a better formula and this will solve the problem
-        self.initial_row = pos[1] // utils.SQSIZE
-        self.initial_col = pos[0] // utils.SQSIZE
+        self.initial_row = pos[1] // config.SQSIZE
+        self.initial_col = pos[0] // config.SQSIZE
 
     def drag_pawn(self, pawn):
         self.pawn = pawn
