@@ -5,5 +5,5 @@ class Move:
         self.initial = initial
         self.final = final
 
-    def __eq__(self, other):  # What is a dunder method?
+    def __eq__(self, other):  # What is a dunder method? This functoin compares two moves
         return self.initial == other.initial and self.final == other.final

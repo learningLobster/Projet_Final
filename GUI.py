@@ -16,20 +16,21 @@ from pawn import Pawn
 from dragger import Dragger   
 from move import Move
 
-
+# Can I put a variable here? I mean right here, before the class declaration
 
 class Game():
     def __init__(self):
 
-
-        
-        config.theme_sound() # Ce est supposé se trouver danq la mainloop mais il renvoi une erreur, je l'ai donc mis là
+        config.theme_sound() # Cett function est supposé se trouver dans la mainloop mais il renvoi une erreur, je l'ai donc mis là
 
         # Create game Window
         py.init()  # It is imperative to put this in the code, because it initializes all pygame modules
+
         self.screen = py.display.set_mode(
             (config.SCREEN_WIDTH, config.SCREEN_HEIGHT))  # Set the screen dimensions
         py.display.set_caption('Quorridor')  # sets the screen title
+        game_icon = py.image.load('assets\\Pictures\\game_icon.png') # Loads an Image
+        py.display.set_icon(game_icon) # sets the screen icon
         self.clock = py.time.Clock()
         self.dragger = Dragger()
 
@@ -43,6 +44,7 @@ class Game():
 
         # Game state variables
         # self.game_paused = False
+        self.game_over = False
         self.game_state = 'menu'
         self.all_players = ["white", "red", "black", "green"]
         self.actual_players = []
@@ -55,9 +57,6 @@ class Game():
 
         # Move related variables
         self.last_move = None  # I don't think I'll need but it can be useful
-        # self.player = "white"
-        
-        
 
         # Pawns
         self.red_pawn = Pawn('red')
@@ -92,6 +91,7 @@ class Game():
         start_img = py.image.load("assets\Pictures\\start_button.png").convert_alpha()
         back_img = py.image.load("assets\Pictures\\back_button.png").convert_alpha()
         resume_img = py.image.load("assets\Pictures\\resume_button.png").convert_alpha()
+        proceed_img = py.image.load("assets\Pictures\\proceed_button.png").convert_alpha()
 
         # create button instances
         self.start_button = button.Button(
@@ -123,6 +123,12 @@ class Game():
             config.height_prct(85),
             resume_img,
         )
+        
+        self.proceed_button = button.Button(
+            config.width_prct(25),
+            config.height_prct(86),
+            proceed_img,
+        )
 
 
     # Set the postion of each pawn in the console board
@@ -138,13 +144,16 @@ class Game():
         return self.cases[row][col]
     
 
-    # Defines possible moves
+    # Defines the list of possible moves
     def define_moves(self, pawn, row, col): # Calc move works perfectly, at least it returns the right squares. It does return the right result
-        number = 0 # Don't think I really need this anymore, It was used to debug the chess problem
         """
-            Calculates the possible moves
+        TODO: set a list of possible moves.
+        PARAMETERS: 
+            pawn: the pawn we wanrt to move.
+            row: the pawn row.
+            col: the pawn col.
         """
-        # if isinstance(piece, Pawn):
+        
         # A set of all possible movements
         possible_moves = [
             (row, col-1),  # left
@@ -158,11 +167,6 @@ class Game():
             if Case.in_range(possible_move_row, possible_move_col): # If the moves are in range of the board(if they don't exceed the board size)
                 if self.cases[possible_move_row][possible_move_col].empty():
                     if not self.cases[possible_move_row][possible_move_col].has_pawn():
-                    
-                        # A debug, I think?
-                        if self.cases[possible_move_row][possible_move_col].pawn != None:
-                            print(number)
-                
                         # Creates new cases
                         initial = Case(row, col)
                         final = Case(possible_move_row, possible_move_col)
@@ -170,10 +174,8 @@ class Game():
                         # Create new move
                         move = Move(initial, final)
                         pawn.add_move(move)
-
-                        number += 1
                     
-                else: #self.cases[possible_move_row][possible_move_col].has_pawn(): # I can either use this condition to make the code perfect or I can just make a turn function and that should do the trick
+                else: 
                     enemy_pos = self.cases[possible_move_row][possible_move_col]
 
                     # It is 00:46 on the 11/05/2023, you are tired and your nested condition are getting messy. You should definitely check them and prevent them from jumping two squares
@@ -191,7 +193,12 @@ class Game():
 
     # Moves pawns
     def move_pawn(self, pawn, move):
-
+        """
+        TODO: move a pawn.
+        PARAMETERS: 
+            pawn: the pawn being moved.
+            move: the move we are trying to make.
+        """
         initial = move.initial
         final = move.final
 
@@ -210,7 +217,13 @@ class Game():
 
     # Check if a move is valid and prevents invalid ones
     def valid_move(self, pawn, move):
-        if pawn != None:
+        """
+        TODO: Check if a move is valid and prevent invalid ones.
+        Parameters: 
+            pawn: The pawn we want to move.
+            move: The move we want to make(an instance of the move class).
+        """
+        if pawn is not None:
             return move in pawn.moves
     
 
@@ -219,19 +232,21 @@ class Game():
 
     # Displays board
     def display_board(self, screen):
+        """
+        TODO: Display the game board.
+        Parameters:
+            screen: The pygame surface.
+        """
         screen.fill(theme.board_color)  # Board color (119, 154, 88)
         for row in range(config.ROWS):
             for col in range(config.COLS):
-
                 # Squares
-                # rectangle dimensions, the format is (row, col, width, height)
                 squares_rect = (col * config.SQSIZE, row *
-                                config.SQSIZE, config.SQSIZE, config.SQSIZE)
-                # Is the "self" really necessary?
+                                config.SQSIZE, config.SQSIZE, config.SQSIZE) # rectangle dimensions, the format is (row, col, width, height)
                 squares = py.draw.rect(
                     screen, theme.walls_color, squares_rect, 5, 5) # Lines colors
-                # self.squares got collidepoint as well
                 
+                # What was I using it for?(28/05/2023; 21:49)
                 pos = py.mouse.get_pos()
                 if squares.collidepoint(pos):
                     if py.mouse.get_pressed()[0] == 1:
@@ -284,7 +299,11 @@ class Game():
 
     # Display pawns
     def display_pawns(self, screen):
-
+        """
+        TODO: display the pawns.
+        Parameters:
+            screen: pygame surface.
+        """
         for row in range(config.ROWS):
             for col in range(config.COLS):
                 # I position the pawns in this loop
@@ -337,6 +356,11 @@ class Game():
 
     # Displays moves
     def display_moves(self, screen):
+        """
+        TODO: display the possible moves.
+        Parameters: 
+            screen: Pygame surface.        
+        """
         if self.dragger.dragging:
             pawn = self.dragger.pawn
 
@@ -346,14 +370,18 @@ class Game():
                 color = theme.moves_color  # You should definitely change this color
                 # color = 'blue' if (move.final.row+move.final.col) % 2 == 0 else 'lightblue'
                 # rect
-                rect = (move.final.col * config.SQSIZE, move.final.row *
-                        config.SQSIZE, config.SQSIZE, config.SQSIZE)
+                rect = (move.final.col * config.SQSIZE, move.final.row *config.SQSIZE, config.SQSIZE, config.SQSIZE)
                 # blit
                 py.draw.rect(screen, color, rect)
 
         
     def check_win(self, pawn, final):
-        
+        """
+        TODO: check if a player has won.
+        Parameters:
+            pawn: The player's pawn.
+            final: The final move. Basically the player's current position after his last move.
+        """
         if final.row == 0 and pawn.color == 'green':
             print(f"Green wins!")
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
@@ -378,20 +406,47 @@ class Game():
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
             popup.alert(text="White wins", title="Game Message", button="Ok")
             self.actual_players.remove("white")
+    
 
-        
+    def check_game_over(self):
+        """
+        TODO: Check if a player has lost.
+        """
+        if len(self.actual_players) == 1: 
+            self.game_over = True
+            config.game_over_sound()
+            game_over_popup = popup.confirm(text=f"{self.player} loses! Do you wanna play again?", title="Game Over!", buttons=['Yes', 'No', 'Exit'])
+            if game_over_popup == 'Yes':
+                self.new_game()
+            elif game_over_popup == 'Exit':
+                py.quit()
+                sys.exit()
+            else:
+                py.display.set_caption("Game Over! Press SPACE to play again.")
+                config.stop_theme_sound()
+
+
+    def new_game(self):
+        """
+        TODO: Make a new instance of the Game object. 
+        """
+        # How to make it work?
+        # self.game = Game(self)
+        self.__init__() # It kind of works but takes the user back to the very first window. My text formatter is not happy, look for a better way to do it
 
 
     # Event handler
     def check_events(self):
-
+        """
+        TODO: Check every action made by the user on the computer.
+        """
         for event in py.event.get():
             # Allows to quit the application correctly
             if event.type == py.QUIT:
                 py.quit()
                 sys.exit()
 
-            if event.type == py.MOUSEBUTTONDOWN:
+            elif event.type == py.MOUSEBUTTONDOWN:
                 self.dragger.update_mouse(event.pos) # update the mouse position
                 clicked_row = self.dragger.pos_y // config.SQSIZE # Returns the row that was clicked
                 clicked_col = self.dragger.pos_x // config.SQSIZE # Returns the column that was clicked
@@ -399,20 +454,22 @@ class Game():
                 if self.cases[clicked_row][clicked_col].has_pawn(): # Checks wether the clicked cell has a pawn
                     pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
 
-                    if pawn.color == self.player:
+                    if pawn.color == self.player: 
                         self.define_moves(pawn, clicked_row, clicked_col)
                         self.dragger.save_initial(event.pos) # Saves the initial position of the pawn
                         self.dragger.drag_pawn(pawn)
                         self.display_moves(self.screen)
+                        self.check_game_over()
+                        
 
-            if event.type == py.MOUSEMOTION:
+            elif event.type == py.MOUSEMOTION:
                 # If we are dragging the pawn
                 if self.dragger.dragging:
                     self.dragger.update_mouse(event.pos)
                     self.display_moves(self.screen)
                     self.dragger.update_screen(self.screen)
 
-            if event.type == py.MOUSEBUTTONUP:
+            elif event.type == py.MOUSEBUTTONUP:
                 if self.dragger.dragging:
                     self.dragger.update_mouse(event.pos)
 
@@ -422,23 +479,44 @@ class Game():
                 # Create possible move
                 initial = Case(self.dragger.initial_row, self.dragger.initial_col)
                 final = Case(released_row, released_col)
-                move = Move(initial, final)
+                move = Move(initial, final) # It checks if the move we are trying to make is a valid one
 
                 # Checks if it is a valid move
                 if self.valid_move(self.dragger.pawn, move): # I stopped there, the valid move verification has an issue. I think it is most likely that the move isn't considered a valide one thus is not accepted, you should look more into it
-                # print('test successful')
                     if self.dragger.pawn != None:
                         self.move_pawn(self.dragger.pawn, move)
                         self.check_win(self.dragger.pawn, final)
-                        self.turn() # You should really use a variable here
-                        print(self.idx)
+                        self.turn() # You should really use a variable here. I think it no longer requires a variablr=e(Must check)
                         # Move sound
                         config.move_sound()
 
-                self.dragger.undrag_pawn()                    
+                self.dragger.undrag_pawn()    
+
+            elif event.type == py.KEYDOWN:
+                if event.key == py.K_SPACE:
+                    if self.game_over:
+                        self.new_game()     
+                if event.key == py.K_h:
+                    # print('true')
+                    if self.game_state == "game" and not self.game_over:
+                        self.rules()         
                 
 
+    def rules(self):
+        """
+        TODO: Display the game rules.
+        """
+        # First prompt
+        prompt = popup.confirm(text="which language do you speak?", title="Hello", buttons=["French", "English"])
+        if prompt == "French":
+            rules = popup.alert(text='Pour jouer, veuillez clicker sur le pion indiquer au haut de la fenêtre. Ce jeu est un jeu au tour par tour, durant chaque tour le pion est indiqué sur la fenêtre. Vous pouvez pouvez placer des barrières en cliquant sur les bordures du plateau.', title="Règles", button="OK!")
+        elif prompt == "English":
+            rules = popup.alert(text="You can play by dragging and dropping a pawn, as this is an in turn game, you will see the player whose turn it is at the top of the window. Fences can be placed by clicking on the board lines but be aware, their numbers are limited.", title="Rules", button="OK!")
+
     def turn(self):
+        """
+        TODO: Manage the change of turns. # It is not very clear.
+        """
         self.idx += 1
         self.idx %= len(self.actual_players)  
         self.player = self.actual_players[self.idx]      
@@ -446,6 +524,9 @@ class Game():
 
     # Game loop
     def mainloop(self):
+        """
+        TODO: Call every function to make the game run.
+        """
         # The dropdown lists don't work
         board_sizes = Dropdown(
             self.screen,
@@ -478,11 +559,33 @@ class Game():
                     sys.exit()
 
             elif self.game_state == 'help':
+                self.screen.fill("white")
+
+                font = py.font.SysFont("comicsansms",55)
+                text = font.render("""This game is called Quoridor. The rules are really simple:\n- First: Play\n- Second: Don't lose\n- Third: Win!""",
+                True,
+                'cyan',
+                'white')
+                
+                text_rect = text.get_rect()
+                text_rect.center = ((config.SCREEN_WIDTH//2),(config.SCREEN_HEIGHT//2))
+                self.screen.blit(text, text_rect)
+
                 if self.back_button.display(self.screen):
                     self.game_state = 'menu'
 
+            elif self.game_state == 'utils':
+                config.ROWS = 11
+
+                if self.back_button.display(self.screen):
+                    self.game_state = 'menu'
+
+                if self.proceed_button.display(self.screen):
+                    self.game_state = 'game'
+
             elif self.game_state == 'game':
-                py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn')  # sets the screen title
+                if not self.game_over:
+                    py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn.' + "              " + "Press 'h' for rules/Cliquez sur 'h' pour les règles")  # sets the screen title
                 self.display_board(self.screen)
                 self.display_moves(self.screen)
                 # self.display_walls(self.screen)
@@ -493,30 +596,6 @@ class Game():
                 if self.dragger.dragging:
                     self.dragger.update_screen(self.screen)
 
-            elif self.game_state == 'utils':
-                if self.back_button.display(self.screen):
-                    self.game_state = 'menu'
-
-                if self.resume_button.display(self.screen):
-                    self.game_state = 'game'
-
-                # Below is a useless code
-                selected_board_size = board_sizes.getSelected()
-                # selected_number_of_players = int(number_of_players.getValue())
-                # selected_number_of_walls = int(number_of_walls.getValue())
-
-                # board_sizes.listen()
-                # number_of_players.listen()
-                # number_of_walls.listen()
-
-                board_sizes.draw()
-                # number_of_players.draw()
-                # number_of_walls.draw()
-
             self.clock.tick(60)
             py.display.update()
 
-
-if __name__ == "__main__":
-    game = Game()
-    game.mainloop()

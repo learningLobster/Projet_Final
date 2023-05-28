@@ -4,8 +4,8 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 800
 
 
-ROWS = 5
-COLS = ROWS
+ROWS = 11
+COLS = 11
 SQSIZE = SCREEN_WIDTH // COLS
 NUM_OF_PLAYERS = 2
 
@@ -37,6 +37,13 @@ def theme_sound():
     mixer.music.load("assets\\Sounds\\Passing_Through.mp3")
     mixer.music.play(-1)
     mixer.music.set_volume(0.1)
+
+def game_over_sound():
+    sound_file = mixer.Sound("assets\\Sounds\\gameover_sound.wav")
+    mixer.Sound.play(sound_file).set_volume(0.3)
+
+def stop_theme_sound():
+    mixer.music.stop()
 
 
 
