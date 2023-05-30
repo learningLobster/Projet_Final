@@ -1,5 +1,15 @@
-from GUI import Game
+from pygame import mixer
+from game import Menu
 
 
-game = Game()
-game.mainloop()
+def main():
+    """
+    This function executes the entire code with all classes.
+    """
+    mixer.init()
+    game = Menu()
+    game.mainloop()
+
+
+if __name__ == '__main__':
+    main()
