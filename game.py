@@ -29,11 +29,8 @@ class Move:
 
 
 
-
-class Menu():
-
+class Window:
     def __init__(self):
-
         SCREEN_WIDTH = 800
         SCREEN_HEIGHT = 800
         self.SCREEN_WIDTH = SCREEN_WIDTH
@@ -49,7 +46,21 @@ class Menu():
         py.display.set_caption('Quorridor')  # sets the window title
         game_icon = py.image.load('assets\\Pictures\\game_icon.png') # Loads an Image
         py.display.set_icon(game_icon) # sets the window icon
-        self.clock = py.time.Clock() # What is that?
+        self.clock = py.time.Clock() # What is that?       
+
+    # The two functions below help us position elements onto the screen
+    def height_prct(self, percentage):
+        return (self.SCREEN_HEIGHT / 100) * percentage
+
+    def width_prct(self, percentage):
+        return (self.SCREEN_WIDTH / 100) * percentage        
+
+
+class Menu(Window):
+
+    def __init__(self):
+
+        super().__init__()
 
         # Load button images
         help_img = py.image.load("assets\\Pictures\\help_button.png").convert_alpha()
@@ -138,35 +149,11 @@ class Menu():
             direction='down',
         )
 
-    
-    # The two functions below help us position elements onto the screen
-    def height_prct(self, percentage):
-        return (self.SCREEN_HEIGHT / 100) * percentage
-
-    def width_prct(self, percentage):
-        return (self.SCREEN_WIDTH / 100) * percentage
 
 
     def get_number_of_walls(self):
         pass
-    
-    # Sound methods
-    def move_sound(self):
-        sound_file = mixer.Sound("assets\\Sounds\\move_sound.wav")
-        m_sound = mixer.Sound.play(sound_file)
-        m_sound.set_volume(0.1)
 
-    def theme_sound(self):
-        mixer.music.load("assets\\Sounds\\Passing_Through.mp3")
-        mixer.music.play(-1)
-        mixer.music.set_volume(0.1)
-
-    def game_over_sound(self):
-        sound_file = mixer.Sound("assets\\Sounds\\gameover_sound.wav")
-        mixer.Sound.play(sound_file).set_volume(0.3)
-
-    def stop_theme_sound(self):
-        mixer.music.stop()
 
     # Event handler
     def check_events(self):
@@ -241,7 +228,7 @@ class Menu():
             py.display.update()
 
 
-class Quoridor(Menu):
+class Quoridor(Window):
     """
     TODO: Execute the game logic
     """
@@ -434,6 +421,24 @@ class Quoridor(Menu):
         dragger.initial_col = pos[0] // self.SQSIZE
 
 
+        # Sound methods
+    def move_sound(self):
+        sound_file = mixer.Sound("assets\\Sounds\\move_sound.wav")
+        m_sound = mixer.Sound.play(sound_file)
+        m_sound.set_volume(0.1)
+
+    def theme_sound(self):
+        mixer.music.load("assets\\Sounds\\Passing_Through.mp3")
+        mixer.music.play(-1)
+        mixer.music.set_volume(0.1)
+
+    def game_over_sound(self):
+        sound_file = mixer.Sound("assets\\Sounds\\gameover_sound.wav")
+        mixer.Sound.play(sound_file).set_volume(0.3)
+
+    def stop_theme_sound(self):
+        mixer.music.stop()
+
     # display methods
 
     # Displays board
@@ -608,22 +613,26 @@ class Quoridor(Menu):
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
             popup.alert(text="Green wins", title="Game Message", button="Ok")
             self.actual_players.remove("green")
+            # return True
 
         elif final.row == (self.rows-1) and pawn.color == 'black':
             print(self.cases[final.row][final.col].pawn.color)
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
             popup.alert(text="Black wins", title="Game Message", button="Ok")
             self.actual_players.remove("black")
+            # return True
 
         elif final.col == (self.rows-1) and pawn.color == 'red':
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
             popup.alert(text="Red wins", title="Game Message", button="Ok")
             self.actual_players.remove("red")
+            # return True
 
         elif final.col == 0 and pawn.color == "white":
             self.cases[final.row][final.col].pawn = None # Erases the pawn from the screen
             popup.alert(text="White wins", title="Game Message", button="Ok")
             self.actual_players.remove("white")
+            # return True
     
 
     def check_game_over(self):
@@ -679,7 +688,6 @@ class Quoridor(Menu):
                         pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
 
                         if pawn.color == self.player:
-                            print(self.player)
                             self.define_moves(pawn, clicked_row, clicked_col)
                             self.save_initial(self.dragger, event.pos) # Saves the initial position of the pawn
                             self.dragger.drag_pawn(pawn)
@@ -748,6 +756,8 @@ class Quoridor(Menu):
         self.idx %= len(self.actual_players)  
         self.player = self.actual_players[self.idx]
 
+        # if self.player.check_win():
+        #     print('Eureka!!!')
 
     # Game loop
     def mainloop(self):
