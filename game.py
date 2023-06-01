@@ -262,11 +262,14 @@ class Quoridor(Window):
         self.clicked = False
         self.idx = 0
 
+
         # Add player
         for number in range(NUM_OF_PLAYERS):
             self.actual_players.append(self.all_players[number])
         self.player = self.actual_players[self.idx]
 
+        # Window title
+        py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn.' + "              " + "Press 'h' for rules/Cliquez sur 'h' pour les règles")  # sets the screen title
 
         # Pawns colours
         P1 = colours.P1_COLOR
@@ -688,10 +691,11 @@ class Quoridor(Window):
                         pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
 
                         if pawn.color == self.player:
-                            self.define_moves(pawn, clicked_row, clicked_col)
-                            self.save_initial(self.dragger, event.pos) # Saves the initial position of the pawn
-                            self.dragger.drag_pawn(pawn)
-                            self.display_moves(self.screen)
+                            if not self.game_over:
+                                self.define_moves(pawn, clicked_row, clicked_col)
+                                self.save_initial(self.dragger, event.pos) # Saves the initial position of the pawn
+                                self.dragger.drag_pawn(pawn)
+                                self.display_moves(self.screen)
                             self.check_game_over()
                 except IndexError:
                     print('Error!')
@@ -741,8 +745,8 @@ class Quoridor(Window):
         TODO: Display the game rules.
         """
         # First prompt
-        prompt = popup.confirm(text="which language do you speak?", title="Hello", buttons=["French", "English"])
-        if prompt == "French":
+        prompt = popup.confirm(text="which language do you speak?", title="Hello", buttons=["Français", "English"])
+        if prompt == "Français":
             rules = popup.alert(text='Pour jouer, veuillez clicker sur le pion indiquer au haut de la fenêtre. Ce jeu est un jeu au tour par tour, durant chaque tour le pion est indiqué sur la fenêtre. Vous pouvez pouvez placer des barrières en cliquant sur les bordures du plateau.', title="Règles", button="OK!")
         elif prompt == "English":
             rules = popup.alert(text="You can play by dragging and dropping a pawn, as this is an in turn game, you will see the player whose turn it is at the top of the window. Fences can be placed by clicking on the board lines but be aware, their numbers are limited.", title="Rules", button="OK!")
@@ -766,8 +770,7 @@ class Quoridor(Window):
         """
 
         while True:
-            py.display.set_caption(f'QUORRIDOR! {self.player}\'s turn.' + "              " + "Press 'h' for rules/Cliquez sur 'h' pour les règles")  # sets the screen title
-            self.check_events()            
+            self.check_events()
             self.display_board(self.screen)
             self.display_moves(self.screen)
             # if self.test:
