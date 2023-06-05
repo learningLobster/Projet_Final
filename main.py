@@ -1,5 +1,5 @@
 from pygame import mixer
-from game import Menu, Quoridor
+from game import Menu
 
 
 def main():
@@ -7,9 +7,7 @@ def main():
     This function executes the entire code with all classes.
     """
     mixer.init()
-    # game = Menu()
-    # game.mainloop()
-    game = Quoridor(5, 5, 2, 88)
+    game = Menu()
     game.mainloop()
 
 

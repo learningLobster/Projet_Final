@@ -260,7 +260,6 @@ class Quoridor(Window):
         self.all_players = ["white", "red", "black", "green"]
         self.actual_players = []
         self.clicked = False
-        self.clicks = 0 # self.click_count
         self.idx = 0
 
 
@@ -330,17 +329,6 @@ class Quoridor(Window):
         elif color == "green": # P4 # Or you can use an else statement
             self.cases[row][col] = Case(row, col, self.green_pawn)
         # return self.cases[row][col] # Do I need this return statement?
-
-    def set_walls_position(self, row, col):
-        """
-        TODO: Set wall position on the console board.
-        Parameters: 
-            row: the row position.
-            col: The column position.
-        Returns:
-            A square object containing a wall.
-        """
-        self.cases[row][col] = Case(row, col, fence=True)
 
 
     # Defines the list of possible moves
@@ -479,74 +467,62 @@ class Quoridor(Window):
                 pos = py.mouse.get_pos()
                 if squares.collidepoint(pos):
                     if py.mouse.get_pressed()[0] == 1:
-                        print(pos)
-                        # row = pos[1] // self.SQSIZE
-                        # col = pos[0] // self.SQSIZE
-                        if pos[1] in range(0, self.SQSIZE//10):
-                            print("Yes Yes Yess!!")
-                        elif pos[1] in range(self.SQSIZE-10, self.SQSIZE):
-                            for n in range(self.SQSIZE):
-                                print(n)
-
-                        # print(pos[1] in range(0, 10))
-                        # self.set_wall(self.screen, col, row)
+                        # print(pos)
+                        row = pos[1] // self.SQSIZE
+                        col = pos[0] // self.SQSIZE
+                        # self.set_wall(9self.screen, col, row)
                         # self.display_walls(self.screen)
                         # print(pos[1] // self.SQSIZE) # Row
                         # print(pos[0] // self.SQSIZE) # Col
 
+    # def set_wall(self, screen, col, row):
+    #     horiz_rect = (
+    #     col * self.SQSIZE, 
+    #     (row+1) * self.SQSIZE, 
+    #     self.SQSIZE, 
+    #     10
+    #     )
+    #     horizontal_walls = py.draw.rect(screen, "#331a00", horiz_rect, 1)
+    # Displays walls
+    def display_walls(self, screen):
+        # test colors
+        RED = (255, 0, 0)
+        blc = (0, 0, 0)
 
-    def display_walls(self, screen, x, y):
-        """
-        TODO: display the pawns.
-        Parameters:
-            screen: pygame surface.
-        """
-        for row in range(self.rows):
-            for col in range(self.cols):
-                # I position the pawns in this loop
-                
-                if self.cases[row][col].has_fence():  # Check if the square has a pawn
-                    py.draw.rect(screen, "#331a00", x, y)
-        # # If rows == rows: horizontal elif cols == cols: vertical else: invalid
-        # # test colors
-        # RED = (255, 0, 0)
-        # blc = (0, 0, 0)
+        for row in range(self.rows-1):
+            for col in range(self.cols-1):
+                # Horizontal wall spots
+                horiz_rect = (
+                    col * self.SQSIZE, 
+                    (row+1) * self.SQSIZE, 
+                    self.SQSIZE, 
+                    10
+                    )
+                horizontal_walls = py.draw.rect(screen, "#331a00", horiz_rect)
 
-        # for row in range(self.rows-1):
-        #     for col in range(self.cols-1):
+                # Vertical walls
+                vert_rect = (
+                    (col+1) * self.SQSIZE, 
+                    (row-1) * self.SQSIZE, 
+                    10, 
+                    self.SQSIZE
+                    )
+                vert_walls = py.draw.rect(screen, "#331a00", vert_rect)
 
-                # # Horizontal wall spots
-                # horiz_rect = (
-                #     col * self.SQSIZE, 
-                #     (row+1) * self.SQSIZE, 
-                #     self.SQSIZE, 
-                #     10
-                #     )
-                # horizontal_walls = py.draw.rect(screen, "#331a00", horiz_rect)
+                # Click handler
+                pos = py.mouse.get_pos()
+                if horizontal_walls.collidepoint(pos) and self.clicked is False:
+                    # and self.clicked == False:
+                    if py.mouse.get_pressed()[0] == 1 and not self.dragger.dragging:
+                        self.clicked = True
+                        horizontal_walls = py.draw.rect(
+                            screen, blc, horiz_rect, 1)
 
-                # # Vertical walls
-                # vert_rect = (
-                #     (col+1) * self.SQSIZE, 
-                #     (row-1) * self.SQSIZE, 
-                #     10, 
-                #     self.SQSIZE
-                #     )
-                # vert_walls = py.draw.rect(screen, "#331a00", vert_rect)
-
-                # # Click handler
-                # pos = py.mouse.get_pos()
-                # if horizontal_walls.collidepoint(pos) and self.clicked is False:
-                #     # and self.clicked == False:
-                #     if py.mouse.get_pressed()[0] == 1 and not self.dragger.dragging:
-                #         self.clicked = True
-                #         horizontal_walls = py.draw.rect(
-                #             screen, blc, horiz_rect, 1)
-
-                # if vert_walls.collidepoint(pos):
-                #     # and self.clicked == False:
-                #     if py.mouse.get_pressed()[0] == 1:
-                #         # self.clicked = True
-                #         vert_walls = py.draw.rect(screen, blc, vert_rect, 1)
+                if vert_walls.collidepoint(pos):
+                    # and self.clicked == False:
+                    if py.mouse.get_pressed()[0] == 1:
+                        # self.clicked = True
+                        vert_walls = py.draw.rect(screen, blc, vert_rect, 1)
 
 
 
@@ -705,21 +681,12 @@ class Quoridor(Window):
                 sys.exit()
 
             elif event.type == py.MOUSEBUTTONDOWN:
-                # print((self.SQSIZE)//10)
+
                 self.test = True
                 try:
                     self.dragger.update_mouse(event.pos) # update the mouse position
                     clicked_row = self.dragger.pos_y // self.SQSIZE # Returns the row that was clicked
                     clicked_col = self.dragger.pos_x // self.SQSIZE # Returns the column that was clicked
-                    
-                    if self.clicks % 2 == 0:
-                        x1= clicked_row
-                        y1= clicked_col
-                    else:
-                        x2 = clicked_row
-                        y2 = clicked_col
-                    # print(f' (x1, y1): {(x1, y1)}')
-                    # print(f' (x2, y2): {(x2, y2)}')
                     if self.cases[clicked_row][clicked_col].has_pawn(): # Checks wether the clicked cell has a pawn
                         pawn = self.cases[clicked_row][clicked_col].pawn # Stores the pawn from the clicked cell into the pawn variable
 
@@ -742,7 +709,6 @@ class Quoridor(Window):
                     self.dragger.update_screen(self.screen)
 
             elif event.type == py.MOUSEBUTTONUP:
-                self.clicks += 1
                 if self.dragger.dragging:
                     self.dragger.update_mouse(event.pos)
 
@@ -772,9 +738,6 @@ class Quoridor(Window):
                 if event.key == py.K_h:
                     if not self.game_over:
                         self.rules()
-
-                if event.key == py.K_r:
-                    self.new_game()
 
 
     def rules(self):
