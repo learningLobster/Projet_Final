@@ -1,0 +1,302 @@
+Index: GUI.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import pygame as py\r\nimport sys\r\nimport utils\r\nimport menu_button as button\r\nimport theme\r\nfrom cases import Case\r\nfrom pawn import Pawn\r\n\r\nclass Game():\r\n    def __init__(self):\r\n        # Create game Window\r\n        py.init()\r\n\r\n        self.screen = py.display.set_mode(\r\n            (utils.SCREEN_WIDTH, utils.SCREEN_HEIGHT))\r\n        py.display.set_caption('Quorridor')\r\n        self.clock = py.time.Clock()\r\n\r\n        # This is my console board\r\n        self.cases = [[0] * utils.COLS for i in range(utils.COLS)]\r\n        # Turn squares into instances of another class(will serve to add some properties)\r\n        for row in range(utils.ROWS):\r\n            for col in range(utils.COLS):\r\n                self.cases[row][col] = Case(row, col) # Will give to each square the properties of the Case class\r\n\r\n\r\n        # Game variables\r\n        # self.game_paused = False\r\n        self.game_state = 'menu'\r\n\r\n        # Pawns\r\n        self.red_pawn = Pawn('red')\r\n        self.white_pawn = Pawn('white')\r\n        # Load the pawn images\r\n        self.red_pice = self.red_pawn.piece.convert_alpha()\r\n        self.white_pice = self.white_pawn.piece.convert_alpha()\r\n\r\n        # # Define font\r\n        # self.font = py.font.SysFont('flux', 40) # Look for a suitable font\r\n\r\n\r\n        # Load button images \r\n        help_img = py.image.load(\"assets\\\\help_button.png\").convert_alpha()\r\n        quit_img = py.image.load(\"assets\\\\quit_button.png\").convert_alpha()\r\n        start_img = py.image.load(\"assets\\\\start_button.png\").convert_alpha()\r\n        back_img = py.image.load(\"assets\\\\back_button.png\").convert_alpha()\r\n\r\n        # create button instances\r\n        self.start_button = button.Button(\r\n            utils.width_prct(40),\r\n            utils.height_prct(25),\r\n            start_img,\r\n        )\r\n\r\n        self.help_button = button.Button(\r\n            utils.width_prct(40),\r\n            utils.height_prct(45),\r\n            help_img, \r\n            )\r\n        \r\n        self.quit_button = button.Button(\r\n            utils.width_prct(40),\r\n            utils.height_prct(65),\r\n            quit_img, \r\n            )\r\n        \r\n        self.back_button = button.Button(\r\n            utils.width_prct(75),\r\n            utils.height_prct(85),\r\n            back_img, \r\n            )\r\n        \r\n\r\n    # Show_methods\r\n    def show_board(self, screen):\r\n        self.screen.fill((119, 154, 88))\r\n        for row in range(utils.ROWS):\r\n            for col in range(utils.COLS):\r\n                rect = (col * utils.SQSIZE, row * utils.SQSIZE, utils.SQSIZE, utils.SQSIZE) # rectangle dimensions\r\n                py.draw.rect(screen, theme.board_color, rect, 1)\r\n\r\n    def show_pawns(self):\r\n\r\n        # Display pawns\r\n\r\n        # Red pawn\r\n        self.cases[utils.ROWS // 2][-1] = Case(utils.ROWS // 2, -1, self.red_pawn) # The format is [row][col]\r\n        # White pawn\r\n        self.cases[utils.ROWS // 2][0] = Case(utils.ROWS // 2, 0, self.white_pawn)\r\n\r\n        for row in range(utils.ROWS):\r\n            for col in range(utils.COLS):\r\n                piece_rect = col * utils.SQSIZE + utils.SQSIZE // 2, row * utils.SQSIZE + utils.SQSIZE // 2 # Put the piece at the center of the square\r\n                if self.cases[row][col].has_pawn(): # Check if the square has a pawn\r\n                    if self.cases[row][col] == self.cases[utils.ROWS // 2][-1]:\r\n                        \r\n                        self.screen.blit(\r\n                            self.red_pawn.piece, \r\n                            self.red_pawn.piece.get_rect(center=piece_rect)\r\n                            )\r\n                    elif self.cases[row][col] == self.cases[utils.ROWS // 2][0]:\r\n                        self.screen.blit(\r\n                            self.white_pawn.piece,\r\n                            self.white_pawn.piece.get_rect(center=piece_rect)\r\n                        )\r\n\r\n\r\n\r\n\r\n\r\n    # Event handler\r\n    def check_events(self):\r\n        for event in py.event.get():\r\n            # Allows to quit the application correctly\r\n            if event.type == py.QUIT:\r\n                py.quit()\r\n                sys.exit()\r\n\r\n            if event.type == py.KEYDOWN:\r\n                if event.key == py.K_SPACE:\r\n                    print('test')\r\n\r\n    # Game loop\r\n    def mainloop(self):\r\n\r\n        while True:\r\n\r\n            self.screen.fill((250, 52, 25))\r\n            self.check_events()\r\n    \r\n            if self.game_state == \"menu\":\r\n\r\n                # draw buttons\r\n                # Simply means that the button has been clicked, returns a boolean\r\n                \r\n                # Buttons are clicked two by two, why? Try to change the coords in the blit method. It worked, buttons were too close to each other. I think it is due to the actual size of the pictures themselves\r\n                if self.start_button.display(self.screen):\r\n                    # self.game_state = 'settings'\r\n                    self.game_state = 'game'\r\n                if self.help_button.display(self.screen): self.game_state = 'help' # Simply means that the button has been clicked, returns a boolean\r\n\r\n\r\n\r\n\r\n                if self.quit_button.display(self.screen):  # Simply means that the button has been clicked, returns a boolean\r\n                    py.quit()\r\n                    sys.exit()\r\n\r\n\r\n            elif self.game_state == 'help':\r\n                # Display the rules\r\n                if self.back_button.display(self.screen): self.game_state = 'menu'\r\n                \r\n            elif self.game_state == 'game':\r\n                self.show_board(self.screen)\r\n                self.show_pawns()\r\n\r\n\r\n            self.clock.tick(60)\r\n            py.display.update()\r\n            \r\n\r\n\r\nif __name__ == \"__main__\":\r\n    test = Game()\r\n    test.mainloop()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/GUI.py b/GUI.py
+--- a/GUI.py	(revision ba5ae31ab902b7075d34f4a6f761560051de538a)
++++ b/GUI.py	(date 1683196523517)
+@@ -1,11 +1,16 @@
+ import pygame as py
+ import sys
++
++import dragger
++from pygame import event
++
+ import utils
+ import menu_button as button
+ import theme
+ from cases import Case
+ from pawn import Pawn
+ 
++turn = 0;
+ class Game():
+     def __init__(self):
+         # Create game Window
+@@ -31,6 +36,7 @@
+         # Pawns
+         self.red_pawn = Pawn('red')
+         self.white_pawn = Pawn('white')
++
+         # Load the pawn images
+         self.red_pice = self.red_pawn.piece.convert_alpha()
+         self.white_pice = self.white_pawn.piece.convert_alpha()
+@@ -82,54 +88,143 @@
+     def show_pawns(self):
+ 
+         # Display pawns
++        x1 = 2
++        y1 = 2
+ 
++        x2 = utils.ROWS // 2
++        y2 = 0
+         # Red pawn
+-        self.cases[utils.ROWS // 2][-1] = Case(utils.ROWS // 2, -1, self.red_pawn) # The format is [row][col]
++        self.cases[x1][y1] = Case(x1, y1, self.red_pawn) # The format is [row][col]
+         # White pawn
+-        self.cases[utils.ROWS // 2][0] = Case(utils.ROWS // 2, 0, self.white_pawn)
++        self.cases[x2][y2] = Case(x2, y2, self.white_pawn)
+ 
+         for row in range(utils.ROWS):
+             for col in range(utils.COLS):
+                 piece_rect = col * utils.SQSIZE + utils.SQSIZE // 2, row * utils.SQSIZE + utils.SQSIZE // 2 # Put the piece at the center of the square
++                # print(piece_rect.collidepoint)
+                 if self.cases[row][col].has_pawn(): # Check if the square has a pawn
+-                    if self.cases[row][col] == self.cases[utils.ROWS // 2][-1]:
++                    if self.cases[row][col] == self.cases[x1][y1]:
+                         
+                         self.screen.blit(
+                             self.red_pawn.piece, 
+                             self.red_pawn.piece.get_rect(center=piece_rect)
+                             )
+-                    elif self.cases[row][col] == self.cases[utils.ROWS // 2][0]:
++                    elif self.cases[row][col] == self.cases[x1][y1]:
++
++                        self.screen.blit(
++                            self.red_pawn.piece,
++                            self.red_pawn.piece.get_rect(center=piece_rect)
++                        )
++                    elif self.cases[row][col] == self.cases[x2][y2]:
+                         self.screen.blit(
+                             self.white_pawn.piece,
+                             self.white_pawn.piece.get_rect(center=piece_rect)
+                         )
+ 
+ 
++    # def moves(self):
++
++
++
+ 
+ 
+ 
+-    # Event handler
+-    def check_events(self):
+-        for event in py.event.get():
+-            # Allows to quit the application correctly
+-            if event.type == py.QUIT:
+-                py.quit()
+-                sys.exit()
++
++                # elif event.key == py.K_LEFT:
++                #     self.cases[utils.ROWS // 2][-2] and print('test2')
++                # py.display.update()
++
++    # def move_pawn(self, row_offset, col_offset):
++    #     """
++    #     Move the current player's pawn by the given row and column offset.
++    #     """
++    #     current_pawn = self.red_pawn if self.current_player == 'red' else self.white_pawn
++    #
++    #     # Find the current position of the pawn
++    #     current_row, current_col = None, None
++    #     for row in range(utils.ROWS):
++    #         for col in range(utils.COLS):
++    #             if self.cases[row][col].has_pawn() and self.cases[row][col].pawn.color == self.current_player:
++    #                 current_row, current_col = row, col
++    #                 break
++    #         if current_row is not None:
++    #             break
++    #
++    #     # Calculate the new position of the pawn
++    #     new_row, new_col = current_row + row_offset, current_col + col_offset
++    #
++    #     # Check if the move is valid
++    #     if new_row < 0 or new_row >= utils.ROWS or new_col < 0 or new_col >= utils.COLS:
++    #         return False  # Outside the board
++    #     if row_offset != 0 and col_offset != 0:
++    #         return False  # Diagonal move
++    #     if self.cases[new_row][new_col].has_pawn():
++    #         return False  # Square is already occupied
++    #     if row_offset == -1 and self.cases[current_row][current_col].north_wall:
++    #         return False  # Wall blocks movement
++    #     if row_offset == 1 and self.cases[current_row][current_col].south_wall:
++    #         return False  # Wall blocks movement
++    #     if col_offset == -1 and self.cases[current_row][current_col].west_wall:
++    #         return False  # Wall blocks movement
++    #     if col_offset == 1 and self.cases[current_row][current_col].east_wall:
++    #         return False  # Wall blocks movement
++    #
++    #
++    #     # Move the pawn
++    #
++    #     # if turn %2 == 0:
++    #     #     return self.current_player == 'red';
++    #     #     if self.current_player and self.cases[utils.ROWS // 2][-1] :
++    #     #         print ('tour du joueur red')
++    #     self.cases[current_row][current_col].pawn = None
++    #     self.cases[new_row][new_col].pawn = current_pawn
++    #     return True
++
++    # Game loop
++    def mainloop(self):
++
++        while True:
++            # for event in py.event.get():
++            #     if event.type == py.MOUSEBUTTONDOWN:
++            #         self.dragger.update_mouse(event.pos)
++            #         clicked_row = self.dragger.pos_y // utils.SQSIZE
++            #         clicked_col = self.dragger.pos_x // utils.SQSIZE
++            #
++            #         if self.cases[clicked_row][clicked_col].has_pawn():
++            #             self.show_board(self.screen)
++            #             self.dragger.update_screen(self.screen)
++            #             pawn = self.cases[clicked_row][clicked_col].pawn
++            #             self.dragger.save_initial(event.pos)
++            #             self.dragger.drag_pawn(pawn)
++            #
++            #     if event.type == py.MOUSEMOTION:
++            #         # If we are dragging the pawn
++            #         if self.dragger.dragging:
++            #             self.dragger.update_mouse(event.pos)
++            #             self.show_board(self.screen)
++            #             self.dragger.update_screen(self.screen)
++            #
++            #     if event.type == py.MOUSEBUTTONUP:
++            #         self.dragger.undrag_pawn()
++            for event in py.event.get():
++                # Allows to quit the application correctly
++                if event.type == py.QUIT:
++                    py.quit()
++                    sys.exit()
+ 
+-            if event.type == py.KEYDOWN:
+-                if event.key == py.K_SPACE:
+-                    print('test')
+-
+-    # Game loop
+-    def mainloop(self):
+-
+-        while True:
++                if event.type == py.KEYDOWN:
++                    if event.key == py.K_SPACE:
++                        print('test')
++                    if event.key == py.K_LEFT and Case(2, 2, self.red_pawn):
++                        Case(1, 2, self.red_pawn) and print('test3')
++                    py.display.update()
+ 
+             self.screen.fill((250, 52, 25))
+-            self.check_events()
++
+     
+             if self.game_state == "menu":
+ 
++
+                 # draw buttons
+                 # Simply means that the button has been clicked, returns a boolean
+                 
+@@ -137,6 +232,7 @@
+                 if self.start_button.display(self.screen):
+                     # self.game_state = 'settings'
+                     self.game_state = 'game'
++
+                 if self.help_button.display(self.screen): self.game_state = 'help' # Simply means that the button has been clicked, returns a boolean
+ 
+ 
+Index: cases.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import utils\r\nimport pygame\r\n\r\nclass Case:\r\n\r\n    def __init__(self, row, col, pawn=None, fence=None):\r\n        self.row = row\r\n        self.col = col\r\n        self.pawn = pawn\r\n        self.fence = fence\r\n        self.moves()\r\n        \r\n\r\n\r\n    # Will make the moves\r\n    def moves(self):\r\n        pass\r\n\r\n    # Calculates the possible\r\n    def calc_moves(self):\r\n        pass\r\n    \r\n    # Check if there is a pawn\r\n    def has_pawn(self):\r\n        return self.pawn != None\r\n\r\n    # Draw  fence\r\n    def draw_fence(self):\r\n        pass\r\n\r\n    # check if there is a fence\r\n    def has_fence(self):\r\n        return self.fence != None\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/cases.py b/cases.py
+--- a/cases.py	(revision ba5ae31ab902b7075d34f4a6f761560051de538a)
++++ b/cases.py	(date 1682946343981)
+@@ -1,5 +1,8 @@
++import keyword
++
+ import utils
+-import pygame
++import pygame as py
++import sys
+ 
+ class Case:
+ 
+@@ -9,17 +12,38 @@
+         self.pawn = pawn
+         self.fence = fence
+         self.moves()
+-        
+ 
+-
+     # Will make the moves
+     def moves(self):
++        # for row in range(utils.ROWS):
++        #     for col in range(utils.COLS):
++        #         if event.key == py.K_LEFT:
++        #             print('test2')
++        #         py.display.update()
++        # for event in py.event.get():
++        #     if event.type == py.QUIT:
++        #         py.quit()
++        #         sys.exit()
++        #     if event.type == py.KEYDOWN:
++        #         if event.key == py.K_SPACE:
++        #             print('test')
++        #         elif event.key == py.K_LEFT:
++        #             Case(utils.ROWS // 2, 1, self.Pawn('red')) and print('test2')
++        #         py.display.update()
++
++        # for event in py.event.get():
++        #     if Case(self.row, self.col) == Case(utils.ROWS // 2, -1, self.white_pawn) and event.type == py.KEYDOWN:
++        #         if event.key == py.K_LEFT:
++        #             Case(utils.ROWS // 2, 1, self.white_pawn) and print('test2')
++        #     py.display.update()
++        #
+         pass
+ 
+     # Calculates the possible
+     def calc_moves(self):
+         pass
+-    
++
++
+     # Check if there is a pawn
+     def has_pawn(self):
+         return self.pawn != None
+@@ -31,4 +55,3 @@
+     # check if there is a fence
+     def has_fence(self):
+         return self.fence != None
+-
+Index: utils.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>SCREEN_WIDTH = 800\r\nSCREEN_HEIGHT = 800\r\n\r\n# You should make getters and setters instead\r\nROWS = 9\r\nCOLS = 9\r\nSQSIZE = SCREEN_WIDTH // COLS\r\n\r\n\r\ndef height_prct(percentage):\r\n    return (SCREEN_HEIGHT / 100) * percentage\r\n\r\n\r\ndef width_prct(percentage):\r\n    return (SCREEN_WIDTH / 100) * percentage\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/utils.py b/utils.py
+--- a/utils.py	(revision ba5ae31ab902b7075d34f4a6f761560051de538a)
++++ b/utils.py	(date 1682875264556)
+@@ -1,12 +1,17 @@
+ SCREEN_WIDTH = 800
+ SCREEN_HEIGHT = 800
+ 
++#systeme de tour
++turn = 1
++
++
+ # You should make getters and setters instead
+ ROWS = 9
+ COLS = 9
+ SQSIZE = SCREEN_WIDTH // COLS
+ 
+ 
++
+ def height_prct(percentage):
+     return (SCREEN_HEIGHT / 100) * percentage
+ 
