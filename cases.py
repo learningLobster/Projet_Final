@@ -3,7 +3,7 @@
 
 class Case:
 
-    def __init__(self, row, col, pawn=None, fence=None):
+    def __init__(self, row, col, pawn=None, fence=False):
         self.row = row
         self.col = col
         self.pawn = pawn
@@ -16,12 +16,12 @@ class Case:
 
     # Check if there is a pawn
     def has_pawn(self):
-        return self.pawn != None # Returns True or False
+        return self.pawn is not None # Returns True or False
 
 
     # check if there is a fence
     def has_fence(self): # Currenctly fences are being drawn directly onto the screen, try to move it to this function instead
-        return self.fence != None
+        return self.fence is True
 
 
     def has_enemy(self, color): # This function doesn't work properly I think
