@@ -21,9 +21,9 @@ class GameClientFactory(ClientFactory):
         print("Échec de la connexion au serveur :", reason.getErrorMessage())
         reactor.stop()
 
-    def clientConnectionLost(self, connector, reason):
-        print("Connexion perdue :", reason.getErrorMessage())
-        reactor.stop()
+    # def clientConnectionLost(self, connector, reason):
+    #     print("Connexion perdue :", reason.getErrorMessage())
+    #     reactor.stop()
 
 if __name__ == '__main__':
     reactor.connectTCP("localhost", 8000, GameClientFactory())
