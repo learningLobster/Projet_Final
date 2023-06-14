@@ -1,4 +1,3 @@
-import pygame
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol, ClientFactory
 
@@ -28,12 +27,4 @@ class GameClientFactory(ClientFactory):
 
 if __name__ == '__main__':
     reactor.connectTCP("localhost", 8000, GameClientFactory())
-    pygame.init()
-    clock = pygame.time.Clock()
-    running = True
-    while running:
-        clock.tick(30)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                reactor.stop()
+    reactor.run()
