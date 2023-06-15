@@ -1,3 +1,4 @@
+import os
 import pygame
 
 
@@ -5,7 +6,9 @@ class Pawn:
     def __init__(self, color):
         # self.color = color
 
-        self.piece = pygame.image.load(f"assets\{color}_pawn(1).png")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        image_path = os.path.join(current_dir, "assets", f"{color}_pawn(1).png")
+        self.piece = pygame.image.load(image_path)
 
     def show_moves(self):
         pass
