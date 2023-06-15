@@ -1,5 +1,7 @@
 from twisted.internet.protocol import Factory, Protocol
 from twisted.internet import reactor
+from GUI import Game
+
 
 class GameProtocol(Protocol):
     def connectionMade(self):
@@ -10,18 +12,16 @@ class GameProtocol(Protocol):
         received_data = data.decode()
         print("Données reçues du client :", received_data)
 
-        # Répondre au client
-        response = "J'ai reçu votre message : {}".format(received_data)
-        self.transport.write(response.encode())
+        if received_data == "START":
+            # Le client a cliqué sur le bouton "start"
 
-    def connectionLost(self, reason):
-        print("Connexion perdue")
+            # Préparez le plateau de jeu
+            game_board = Game.show_board()  # Fonction à implémenter pour générer le plateau de jeu
 
-class GameFactory(Factory):
-    def buildProtocol(self, addr):
-        return GameProtocol()
+            # Envoie du plateau de jeu au client
+            response = str(game_board)  # Convertit le plateau de jeu en une chaîne de caractères pour l'envoi
+            self.transport.write(response.encode())
 
-if __name__ == '__main__':
-    reactor.listenTCP(8000, GameFactory())
-    print("Serveur démarré sur le port 8000")
-    reactor.run()
+        else:
+            response = "Commande non valide"
+            self.transport.write(response.encode())
