@@ -1,30 +1,19 @@
-from twisted.internet import reactor
-from twisted.internet.protocol import Protocol, ClientFactory
+import socket
 
-class GameClientProtocol(Protocol):
-    def connectionMade(self):
-        print("Connexion établie au serveur")
-        self.transport.write("Hello, server!".encode())
+# Adresse IP et port du serveur
+SERVER_IP = '127.0.0.1'
+SERVER_PORT = 8000
 
-    def dataReceived(self, data):
-        received_data = data.decode()
-        print("Réponse du serveur :", received_data)
-        self.transport.loseConnection()
+# Connexion au serveur
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.connect((SERVER_IP, SERVER_PORT))
 
-    def connectionLost(self, reason):
-        print("Connexion perdue")
+# Envoi de la commande "START" au serveur
+sock.sendall("START".encode())
 
-class GameClientFactory(ClientFactory):
-    protocol = GameClientProtocol
+# Réception de la réponse du serveur (le plateau de jeu)
+response = sock.recv(1024).decode()
+print("Plateau de jeu reçu :", response)
 
-    def clientConnectionFailed(self, connector, reason):
-        print("Échec de la connexion au serveur :", reason.getErrorMessage())
-        reactor.stop()
-
-    # def clientConnectionLost(self, connector, reason):
-    #     print("Connexion perdue :", reason.getErrorMessage())
-    #     reactor.stop()
-
-if __name__ == '__main__':
-    reactor.connectTCP("localhost", 8000, GameClientFactory())
-    reactor.run()
+# Fermeture de la connexion
+sock.close()
