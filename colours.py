@@ -9,3 +9,5 @@ P4_COLOR= 'green'
 WALLS_COLOR = "#663300" # "darkgray"#(119, 154, 88) #331a00
 MOVES_COLOR = "#ff9933" #"#cc6600" #"#996600" #'lightgray' #"#EA3C53" #"#ff6961"
 DROPDOWN_COLOR = 'beige'
+SCREEN_FILL = "#985321"
+HELP_SCREEN = "#0F4D92" # Yale blue

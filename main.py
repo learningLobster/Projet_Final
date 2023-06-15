@@ -2,6 +2,7 @@ from pygame import mixer
 from game import Menu
 
 
+
 def main():
     """
     This function executes the entire code with all classes.
@@ -9,7 +10,6 @@ def main():
     mixer.init()
     game = Menu()
     game.mainloop()
-
 
 if __name__ == '__main__':
     main()

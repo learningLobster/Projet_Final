@@ -3,11 +3,13 @@
 
 class Case:
 
-    def __init__(self, row, col, pawn=None, fence=False):
+    def __init__(self, row, col, pawn=None, vert_fence=False, horiz_fence=False):
         self.row = row
         self.col = col
         self.pawn = pawn
-        self.fence = fence
+        self.vert_fence = vert_fence
+        self.horiz_fence = horiz_fence
+        self.fence_activated = False
 
 
     def __eq__(self, other):
@@ -21,7 +23,7 @@ class Case:
 
     # check if there is a fence
     def has_fence(self): # Currenctly fences are being drawn directly onto the screen, try to move it to this function instead
-        return self.fence is True
+        return self.fence_activated is True
 
 
     def has_enemy(self, color): # This function doesn't work properly I think
@@ -33,15 +35,5 @@ class Case:
         return not self.has_pawn()
 
 
-    def empty_or_ennemy(self, color):
-        return self.empty() or self.has_enemy(color)
-        
-    
-    # # When moving a piece it tells us the possible square inside the board
-    # @staticmethod # A static method is a method that lets us access the methods inside a class without having an instance of that said class
-    # def in_range(*args):  # *args tells python that this method can recive as many arguments as necessary
-    #     for arg in args:
-    #         if arg < 0 or arg > 8:               
-    #             return False
-    #     return True
-
+    # def empty_or_ennemy(self, color):
+    #     return self.empty() or self.has_enemy(color)
